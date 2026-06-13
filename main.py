@@ -15,9 +15,9 @@ images_dict = {"item_image": item_image, "category_image": category_image}
 # Create main frame
 main_frm = tk.Frame(root)
 
-display_mod.setup_frames(main_frm, images_dict)
+display_mod.setup(main_frm, images_dict)
 display_mod.make_category_cards()
-display_mod.make_item_cards(item_image)
+display_mod.make_item_cards()
 display_mod.render_widgets()
 
 main_frm.pack(expand=True, fill="both", padx=10)
