@@ -6,15 +6,13 @@ master_dict = {
     "items": [],
     "images": {},
     "current_page": 0,
-    "prev_category": "Home",
+    "prev_category": "Ulam",
     "category_names": {
-        "Home": 1,
-        "Breakfast": 2,
-        "Lunch": 3,
-        "Dinner": 4,
-        "Sides": 5,
-        "Desserts": 6,
-        "Drinks": 7
+        "Ulam": 1,
+        "Rice": 2,
+        "Sides": 3,
+        "Desserts": 4,
+        "Drinks": 5
     }
 }
 

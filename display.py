@@ -100,6 +100,8 @@ def make_item_cards(amount=1):
             cursor="hand2",
             image=control.retrieve_data("images").get("item_image"),
             compound="top",
+            width=100,
+            height=150,
             borderwidth=2,
             relief="solid",
             command=lambda next_page=control.retrieve_data("current_page") + 1: control.switch_to_page(next_page)
@@ -182,6 +184,11 @@ def clear_screen():
 
 # Display item widgets
 def update_items():
+    item_frm = control.retrieve_data("pages", "frames")["item"]
+    item_frm.columnconfigure(0, weight=1)
+    item_frm.columnconfigure(1, weight=1)
+    item_frm.columnconfigure(2, weight=1)
+
     item_row = 0
     item_column = 0
     items = control.retrieve_data("items")
@@ -190,22 +197,24 @@ def update_items():
         if (item_column + 1 % 3) > 0 and item_column + 1 > 3:
             item_row += 1
             item_column = 0
-        item.grid(row=item_row, column=item_column, padx=5, pady=5)
+        item.grid(row=item_row, column=item_column, sticky="nsew", padx=5, pady=5)
         item_column += 1
 
 def render_widgets(page_number):
+    frames = control.retrieve_data("pages", "frames")
     match page_number:
         case 3:
             control.update_page()
 
             for category in control.retrieve_data("categories"):
                 category.pack(anchor="w", pady=5, padx=5)
-            control.retrieve_data("pages", "frames").get("category").grid(row=1, column=0, sticky="nsew")
-            control.retrieve_data("pages", "frames").get("item").grid(row=1, column=1, sticky="nsew")
-            control.retrieve_data("pages", "frames").get("button").grid(row=2, column=0, columnspan=2, sticky="n", pady=10)
+
+            frames.get("category").grid(row=1, column=0, sticky="nsew")
+            frames.get("item").grid(row=1, column=1, sticky="nsew")
+            frames.get("button").grid(row=2, column=0, columnspan=2, sticky="n", pady=10)
         case 4:
-            control.retrieve_data("pages", "frames").get("heading").grid(row=1, column=0, columnspan=2, sticky="n")
-            control.retrieve_data("pages", "frames").get("choices").grid(row=2, column=0, columnspan=2, sticky="new")
+            frames.get("heading").grid(row=1, column=0, columnspan=2, sticky="n")
+            frames.get("choices").grid(row=2, column=0, columnspan=2, sticky="new")
 
 def destroy_widgets(widgets):
     for widget in widgets:
