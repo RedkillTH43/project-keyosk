@@ -18,6 +18,10 @@ def configure_main(page_number):
             main_frm.rowconfigure(2, weight=0)
             main_frm.rowconfigure(3, weight=1)
             main_frm.rowconfigure(4, weight=0)
+        case 4:
+            main_frm.rowconfigure(1, weight=0)
+            main_frm.rowconfigure(2, weight=1)
+            main_frm.rowconfigure(3, weight=0)
 
 # Set up initial frames for the main screen
 def set_up_main_screen(root):
@@ -197,6 +201,7 @@ def create_second_page():
 
 # Set up frames to be used
 def create_third_page():
+    next_page = control.retrieve_data("current_page") + 1
     main_frm = control.retrieve_data("initial_frames").get("main")
     category_frm = tk.Frame(main_frm, bg="white")
     item_frm = tk.Frame(main_frm, bg="white")
@@ -245,7 +250,8 @@ def create_third_page():
 
     clear_cart_btn = tk.Button(
         cart_button_frm,
-        text="Clear Cart"
+        text="Clear Cart",
+        command=clear_listbox
     )
 
     cancel_btn = tk.Button(
@@ -256,12 +262,12 @@ def create_third_page():
         bg="white"
     )
 
-    # ToDo: Connect to the review page of ordersequence.py
     done_btn = tk.Button(
         button_frm,
         text="Done",
         cursor="hand2",
-        bg="white"
+        bg="white",
+        command=lambda: control.process_order(),
     )
 
     cart_listbox["yscrollcommand"] = cart_scrollbar.set
@@ -299,7 +305,70 @@ def create_third_page():
 
 # Make the widgets and frames for the fourth page
 def create_fourth_page():
-    pass
+    current_page = control.retrieve_data("current_page")
+    main_frm = control.retrieve_data("initial_frames")["main"]
+    heading_frm = tk.Frame(main_frm, bg="white")
+    order_details_frm = tk.Frame(main_frm, bg="white")
+    button_frm = tk.Frame(main_frm, bg="white")
+
+    heading_lbl = tk.Label(
+        heading_frm,
+        text="ORDER REVIEW",
+        font=("Arial", 22, "bold"),
+        bg="white"
+    )
+
+    order_details_textbox = tk.Text(
+        order_details_frm,
+        width=60,
+        height=20,
+        font=("Courier New", 11)
+    )
+
+    total_lbl = tk.Label(
+        order_details_frm,
+        text="Total: PHP 0.00",
+        font=("Arial", 14, "bold"),
+        bg="white"
+    )
+
+    back_btn = tk.Button(
+        button_frm,
+        text="GO BACK",
+        width=15,
+        command=clear_textbox,
+    )
+
+    continue_btn = tk.Button(
+        button_frm,
+        text="CONTINUE",
+        width=15
+    )
+
+    # Display all widgets
+    heading_lbl.grid(row=0, column=0)
+    order_details_textbox.grid(row=0, column=0)
+    total_lbl.grid(row=1, column=0)
+    back_btn.grid(row=0, column=0)
+    continue_btn.grid(row=0, column=1)
+
+    frame_dict = {
+        "heading": heading_frm,
+        "order_details": order_details_frm,
+        "button": button_frm
+    }
+
+    page_dict = {
+        control.retrieve_data("current_page"): { "frames": frame_dict, "is_page_loaded": False }
+    }
+
+    widgets_dict = {
+        "textbox": order_details_textbox,
+        "total": total_lbl
+    }
+
+    control.pass_data(page_dict, "pages")
+    control.pass_data(widgets_dict, "review_widgets")
 
 # Switch to specified page
 def switch_to(page_number):
@@ -364,7 +433,7 @@ def add_to_cart(item_name):
 
 # Change item display according to category
 def change_category(_category_name):
-    destroy_widgets(control.retrieve_data("items"))
+    control.destroy_widgets(control.retrieve_data("items"))
     control.pass_data(_category_name, "current_category")
 
     make_item_cards(amount = len(control.retrieve_data("item_names")[_category_name]))
@@ -388,6 +457,21 @@ def clear_screen():
     if control.retrieve_data("current_page"):
         for frame in control.retrieve_data("pages", "frames"):
             control.retrieve_data("pages", "frames").get(frame).grid_remove()
+
+def clear_textbox():
+    textbox = control.retrieve_data("review_widgets")["textbox"]
+    prev_page = control.retrieve_data("current_page") - 1
+    textbox.config(state="normal")
+    control.clear_widgets(textbox)
+    control.switch_to_page(prev_page)
+
+def clear_listbox():
+    listbox = control.retrieve_data("cart_widgets")["listbox"]
+    total_lbl = control.retrieve_data("cart_widgets")["total"]
+    control.clear_widgets(listbox)
+    control.clear_orders()
+    total_lbl.config(text="Total: PHP 0.00")
+    update_items()
 
 # Display item widgets
 def update_items():
@@ -430,10 +514,26 @@ def update_cart():
 
     cart_listbox.config(listvariable=cart_items)
 
+def update_review_widgets():
+    cart_orders = control.retrieve_data("cart_orders")
+    order_names = list(cart_orders.keys())
+    textbox = control.retrieve_data("review_widgets")["textbox"]
+    total_lbl = control.retrieve_data("review_widgets")["total"]
+
+    content = "ITEM".ljust(20) + "QTY".ljust(8) + "SUBTOTAL\n"
+    textbox.insert("end", content)
+
+    for order_name in order_names:
+        quantity = cart_orders[order_name]["quantity"]
+        cost = cart_orders[order_name]["cost"]
+        content = f"{order_name}".ljust(20) + f"{quantity}".ljust(8) + f"{quantity * cost}.00\n"
+        textbox.insert("end", content)
+
+    total_lbl.config(text=f"{control.retrieve_data('cart_widgets')['total'].cget('text')}")
+    textbox.config(state="disabled")
 
 def render_widgets(page_number):
     frames = control.retrieve_data("pages", "frames")
-    configure_main(page_number)
     match page_number:
         case 1:
             # Display all frames
@@ -456,8 +556,17 @@ def render_widgets(page_number):
             frames.get("cart_button").grid(row=3, column=0, columnspan=2, sticky="n", pady=10)
             frames.get("button").grid(row=4, column=0, columnspan=2, sticky="s", pady=10)
         case 4:
-            pass
+            update_review_widgets()
+            frames.get("heading").grid(row=1, column=0, pady=10)
+            frames.get("order_details").grid(row=2, column=0, sticky="n", pady=10)
+            frames.get("button").grid(row=3, column=0, padx=10, pady=10)
 
-def destroy_widgets(widgets):
-    for widget in widgets:
-        widget.destroy()
+def update_widgets(widgets, destroy=False, clear=False):
+    if destroy:
+        for widget in widgets:
+            widget.destroy()
+    elif clear:
+        try:
+            widgets.delete(1.0, "end")
+        except tk.TclError:
+            widgets.delete(0, "end")

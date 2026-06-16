@@ -13,6 +13,7 @@ master_dict = {
     "current_category": "Ulam",
     "order_details": {},
     "cart_widgets": {},
+    "review_widgets": {},
     "cart_orders": {},
     "MAX_ROW": 8,
     "MAX_COLUMN": 4,
@@ -102,8 +103,8 @@ def update_cart(item_name):
         cart_orders.update(item_dict)
 
 # Process order details into readable format
-def process_order(order_details):
-    pass
+def process_order():
+    control.switch_to_page(4)
 
 # Process the position change of items
 def process_item_grid(item_row, item_column):
@@ -126,3 +127,7 @@ def remove_item():
     selected_item = orders[selected_item_index[0]]
     listbox.delete(selected_item_index[0])
     del cart_orders[selected_item]
+
+def clear_items():
+    cart_orders = master_dict["cart_orders"]
+    cart_orders.clear()

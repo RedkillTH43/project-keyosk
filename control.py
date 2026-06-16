@@ -15,11 +15,10 @@ def clear_page():
 
 # Destroy specified list of widgets
 def destroy_widgets(widgets):
-    display_mod.destroy_widgets(widgets)
+    display_mod.update_widgets(widgets, destroy=True)
 
-# Update specified page
-def update_page(page_number):
-    pass
+def clear_widgets(widgets):
+    display_mod.update_widgets(widgets, clear=True)
 
 # Load specified page
 def load_page(page_number):
@@ -28,6 +27,7 @@ def load_page(page_number):
 # Render specified page
 def render_page(page_number):
     display_mod.render_widgets(page_number)
+    display_mod.configure_main(page_number)
 
 # Pass data object to model
 def pass_data(data_object, destination, deep_dest=None, switch=False):
@@ -46,9 +46,12 @@ def pass_to_cart(item_name):
     model.update_cart(item_name)
 
 # Process order details
-def process_order(details):
-    model.process_order(details)
+def process_order():
+    model.process_order()
 
 def delete_selected():
     model.remove_item()
     display_mod.update_cart()
+
+def clear_orders():
+    model.clear_items()
