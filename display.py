@@ -14,6 +14,10 @@ def configure_main(page_number):
             main_frm.rowconfigure(4, weight=3)
         case 3:
             main_frm.columnconfigure(1, weight=3)
+            main_frm.rowconfigure(1, weight=0)
+            main_frm.rowconfigure(2, weight=0)
+            main_frm.rowconfigure(3, weight=1)
+            main_frm.rowconfigure(4, weight=0)
 
 # Set up initial frames for the main screen
 def set_up_main_screen(root):
@@ -47,11 +51,12 @@ def set_up_page(page_number):
         case 2:
             create_second_page()
         case 3:
-            set_up_frames()
+            create_third_page()
             make_category_cards()
-            make_item_cards()
+            make_item_cards(len(control.retrieve_data("item_names").get(control.retrieve_data("current_category"))))
+            update_items(page_number)
         case 4:
-            pick_meal_type()
+            create_fourth_page()
 
     # Make is_page_loaded of specified page to True
     control.pass_data(True, "pages", "is_page_loaded")
@@ -160,7 +165,7 @@ def create_second_page():
         fg="white",
         width=8,
         height=12,
-        command=lambda: control.switch_to_page(next_page),
+        command=lambda: control.pass_data({"mode": "dine-in"}, "order_details", switch=True),
     )
 
     take_btn = tk.Button(
@@ -171,7 +176,7 @@ def create_second_page():
         fg="white",
         width=8,
         height=12,
-        command=lambda: control.switch_to_page(next_page)
+        command=lambda: control.pass_data({"mode": "take-out"}, "order_details", switch=True)
     )
 
     # Display all widgets
@@ -191,11 +196,49 @@ def create_second_page():
     control.pass_data(page_dict, "pages")
 
 # Set up frames to be used
-def set_up_frames():
+def create_third_page():
     main_frm = control.retrieve_data("initial_frames").get("main")
     category_frm = tk.Frame(main_frm, bg="white")
     item_frm = tk.Frame(main_frm, bg="white")
+    cart_frm = tk.Frame(main_frm, bg="#fafafa")
+    cart_button_frm = tk.Frame(main_frm, bg="white")
     button_frm = tk.Frame(main_frm, padx=5, bg="white")
+
+    cart_frm.columnconfigure(0, weight=1)
+    cart_frm.columnconfigure(1, weight=2)
+    cart_frm.columnconfigure(2, weight=1)
+
+    cart_heading = tk.Label(
+        cart_frm,
+        text="Cart",
+        font=("Arial", 14, "bold"),
+        bg="#fafafa"
+    )
+
+    cart_listbox = tk.Listbox(
+        cart_frm,
+        width=35,
+        height=1
+    )
+
+    cart_total_lbl = tk.Label(
+        cart_frm,
+        text="Total: PHP 0.00",
+        font=("Arial", 12, "bold"),
+        bg="#fafafa"
+    )
+
+    remove_selected_btn = tk.Button(
+        cart_button_frm,
+        text="Remove Selected",
+        bg="tomato",
+        fg="white"
+    )
+
+    clear_cart_btn = tk.Button(
+        cart_button_frm,
+        text="Clear Cart"
+    )
 
     cancel_btn = tk.Button(
         button_frm,
@@ -204,14 +247,20 @@ def set_up_frames():
         command=lambda: control.switch_to_page(1),
         bg="white"
     )
-    
+
     done_btn = tk.Button(
         button_frm,
         text="Done",
         cursor="hand2",
         bg="white"
     )
-    
+
+    # Display all widgets
+    cart_heading.grid(row=0, column=0, sticky="n")
+    cart_listbox.grid(row=0, column=1, sticky="nsew", padx=10)
+    cart_total_lbl.grid(row=0, column=2, sticky="n")
+    remove_selected_btn.grid(row=0, column=0)
+    clear_cart_btn.grid(row=0, column=1)
     cancel_btn.grid(row=0, column=0, padx=5)
     done_btn.grid(row=0, column=1, padx=5)
 
@@ -219,13 +268,25 @@ def set_up_frames():
     frames_dict = {
         "category": category_frm,
         "item": item_frm,
+        "cart": cart_frm,
+        "cart_button": cart_button_frm,
         "button": button_frm
+    }
+
+    widgets_dict = {
+        "listbox": cart_listbox,
+        "total": cart_total_lbl
     }
 
     # Make dictionary to hold page widgets
     page_dict = { control.retrieve_data("current_page"): { "frames": frames_dict, "is_page_loaded": False } }
 
     control.pass_data(page_dict, "pages")
+    control.pass_data(widgets_dict, "cart_widgets")
+
+# Make the widgets and frames for the fourth page
+def create_fourth_page():
+    pass
 
 # Switch to specified page
 def switch_to(page_number):
@@ -259,13 +320,15 @@ def make_category_cards():
     control.pass_data(categories_arr, "categories")
 
 # Create item cards
-def make_item_cards(amount=1):
+def make_item_cards(amount):
     items_arr = []
+    current_category = control.retrieve_data("current_category")
     # Makes an item button by amount times
     for item in range(amount):
+        item_name = control.retrieve_data("item_names")[current_category][item]
         item_btn = tk.Button(
             control.retrieve_data("pages", "frames").get("item"),
-            text="Lorem\nPHP 0.00",
+            text=item_name,
             cursor="hand2",
             image=control.retrieve_data("images").get("item_image"),
             compound="top",
@@ -273,7 +336,7 @@ def make_item_cards(amount=1):
             height=150,
             borderwidth=2,
             relief="solid",
-            command=lambda next_page=control.retrieve_data("current_page") + 1: control.switch_to_page(next_page),
+            command=lambda item_name=item_name: add_to_cart(item_name),
             bg="white"
         )
         # Stores created button to an array
@@ -281,61 +344,18 @@ def make_item_cards(amount=1):
     # Returns the array
     control.pass_data(items_arr, "items")
 
+# Store chosen item to cart
+def add_to_cart(item_name):
+    control.pass_to_cart(item_name)
+    control.update_page(control.retrieve_data("current_page"))
+
 # Change item display according to category
 def change_category(_category_name):
     destroy_widgets(control.retrieve_data("items"))
-    control.pass_data(_category_name, "prev_category")
+    control.pass_data(_category_name, "current_category")
 
-    make_item_cards(amount = control.retrieve_data("category_names").get(_category_name))
-    control.render_page(3)
-
-# Switch to page asking for meal type
-def pick_meal_type():
-    main_frm = control.retrieve_data("initial_frames").get("main")
-    main_frm.rowconfigure(1, weight=0)
-    main_frm.rowconfigure(2, weight=1)
-
-    heading_frm = tk.Frame(main_frm, bg="white")
-    choices_frm = tk.Frame(main_frm, bg="white")
-
-    choices_frm.columnconfigure(0, weight=1)
-    choices_frm.columnconfigure(1, weight=1)
-
-    question_lbl = tk.Label(heading_frm, text="Would you like to make it a meal?", font=("Arial", 20), pady=5, bg="white")
-    yes_btn = tk.Button(
-        choices_frm,
-        text="Yes, make it a meal",
-        cursor="hand2",
-        image=control.retrieve_data("images")["item_image"],
-        compound="top",
-        borderwidth=2,
-        relief="solid",
-        height=300,
-        bg="white"
-    )
-    no_btn = tk.Button(
-        choices_frm,
-        text="No, ala carte only",
-        cursor="hand2",
-        image=control.retrieve_data("images")["item_image"],
-        compound="top",
-        borderwidth=2,
-        relief="solid",
-        height=300,
-        command=lambda: control.switch_to_page(3),
-        bg="white"
-    )
-
-    question_lbl.grid(row=0, column=0, sticky="n")
-    yes_btn.grid(row=0, column=0, sticky="new", padx=5, pady=5)
-    no_btn.grid(row=0, column=1, sticky="new", padx=5, pady=5)
-
-    frames_dict = {
-        "heading": heading_frm,
-        "choices": choices_frm
-    }
-    page_dict = { control.retrieve_data("current_page"): { "frames": frames_dict, "is_page_loaded": False } }
-    control.pass_data(page_dict, "pages")
+    make_item_cards(amount = len(control.retrieve_data("item_names")[_category_name]))
+    control.update_page(control.retrieve_data("current_page"))
 
 # Resets configuration of main frame
 def reset_main():
@@ -373,6 +393,20 @@ def update_items(page_number):
                 item_row, item_column = control.process_item_grid(item_row, item_column)
                 item.grid(row=item_row, column=item_column, sticky="nsew", padx=5, pady=5)
 
+            item_details = []
+            cart_listbox = control.retrieve_data("cart_widgets")["listbox"]
+            cart_total = control.retrieve_data("cart_widgets")["total"]
+            orders = control.retrieve_data("cart_orders")
+
+            if orders:
+                for item in list(orders.keys()):
+                    quantity = orders[item]["quantity"]
+                    item_details.append(f"{item} x{quantity}")
+
+                cart_items = tk.Variable(value=item_details)
+                if cart_listbox.cget("height") != 10:
+                    cart_listbox.config(height=len(orders), listvariable=cart_items)
+
 def render_widgets(page_number):
     frames = control.retrieve_data("pages", "frames")
     configure_main(page_number)
@@ -389,17 +423,16 @@ def render_widgets(page_number):
             frames.get("heading").grid(row=1, column=0, columnspan=2, sticky="n", pady=30)
             frames.get("button").grid(row=2, column=0, columnspan=2, sticky="ew", padx=20, pady=10)
         case 3:
-            control.update_page(page_number)
-
             for category in control.retrieve_data("categories"):
                 category.pack(anchor="w", pady=5, padx=5)
 
-            frames.get("category").grid(row=1, column=0, sticky="nsew")
-            frames.get("item").grid(row=1, column=1, sticky="nsew")
-            frames.get("button").grid(row=2, column=0, columnspan=2, sticky="n", pady=10)
+            frames.get("category").grid(row=1, column=0, sticky="nsew", pady=20)
+            frames.get("item").grid(row=1, column=1, sticky="nsew", pady=20)
+            frames.get("cart").grid(row=2, column=0, columnspan=2, sticky="n")
+            frames.get("cart_button").grid(row=3, column=0, columnspan=2, sticky="n", pady=10)
+            frames.get("button").grid(row=4, column=0, columnspan=2, sticky="s", pady=10)
         case 4:
-            frames.get("heading").grid(row=1, column=0, columnspan=2, sticky="n")
-            frames.get("choices").grid(row=2, column=0, columnspan=2, sticky="new")
+            pass
 
 def destroy_widgets(widgets):
     for widget in widgets:

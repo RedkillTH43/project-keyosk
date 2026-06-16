@@ -30,8 +30,8 @@ def render_page(page_number):
     display_mod.render_widgets(page_number)
 
 # Pass data object to model
-def pass_data(data_object, destination, deep_dest=None):
-    model.update_data(data_object, destination, deep_dest)
+def pass_data(data_object, destination, deep_dest=None, switch=False):
+    model.update_data(data_object, destination, deep_dest, switch)
 
 # Retrieve data object from model
 def retrieve_data(destination, deep_dest=None):
@@ -40,3 +40,11 @@ def retrieve_data(destination, deep_dest=None):
 # Process item grid positions
 def process_item_grid(item_row, item_column):
     return model.process_item_grid(item_row, item_column)
+
+# Save chosen item to cart
+def pass_to_cart(item_name):
+    model.update_cart(item_name)
+
+# Process order details
+def process_order(details):
+    model.process_order(details)
