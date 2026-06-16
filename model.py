@@ -5,15 +5,17 @@ master_dict = {
     "categories": [],
     "items": [],
     "images": {},
-    "current_page": 0,
-    "prev_category": "Ulam",
     "category_names": {
         "Ulam": 1,
         "Rice": 2,
         "Sides": 3,
         "Desserts": 4,
         "Drinks": 5
-    }
+    },
+    "current_page": 0,
+    "prev_category": "Ulam",
+    "MAX_ROW": 8,
+    "MAX_COLUMN": 4
 }
 
 # Update existing data in master dictionary
@@ -45,3 +47,12 @@ def get_data(destination, deep_dest=None):
 # Process order details into readable format
 def process_order(order_details):
     pass
+
+# Process the position change of items
+def process_item_grid(item_row, item_column):
+    if (item_column + 1 % 3) > 0 and item_column + 1 > 3:
+        item_row += 1
+        item_column = 0
+    item_column += 1
+
+    return item_row, item_column

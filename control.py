@@ -18,8 +18,8 @@ def destroy_widgets(widgets):
     display_mod.destroy_widgets(widgets)
 
 # Update specified page
-def update_page():
-    display_mod.update_items()
+def update_page(page_number):
+    display_mod.update_items(page_number)
 
 # Load specified page
 def load_page(page_number):
@@ -36,3 +36,7 @@ def pass_data(data_object, destination, deep_dest=None):
 # Retrieve data object from model
 def retrieve_data(destination, deep_dest=None):
     return model.get_data(destination, deep_dest)
+
+# Process item grid positions
+def process_item_grid(item_row, item_column):
+    return model.process_item_grid(item_row, item_column)
