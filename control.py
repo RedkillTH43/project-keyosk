@@ -19,7 +19,7 @@ def destroy_widgets(widgets):
 
 # Update specified page
 def update_page(page_number):
-    display_mod.update_items(page_number)
+    pass
 
 # Load specified page
 def load_page(page_number):
@@ -48,3 +48,7 @@ def pass_to_cart(item_name):
 # Process order details
 def process_order(details):
     model.process_order(details)
+
+def delete_selected():
+    model.remove_item()
+    display_mod.update_cart()

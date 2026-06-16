@@ -1,4 +1,6 @@
 # Initialize master dictionary
+from turtledemo.clock import current_day
+
 import control
 
 master_dict = {
@@ -14,44 +16,44 @@ master_dict = {
     "cart_orders": {},
     "MAX_ROW": 8,
     "MAX_COLUMN": 4,
-    "category_names": {
-        "Ulam": 1,
-        "Rice": 2,
-        "Sides": 3,
-        "Desserts": 4,
-        "Drinks": 5
-    },
+    "category_names": [
+        "Ulam",
+        "Rice",
+        "Sides",
+        "Desserts",
+        "Drinks"
+    ],
     "item_names": {
-        "Ulam": [
-            "Adobo",
-            "Sinigang",
-            "Kare-Kare",
-            "Chicken Inasal",
-            "Bistek Tagalog"
-        ],
-        "Rice": [
-            "Plain Rice",
-            "Sinangag",
-            "Brown Rice"
-        ],
-        "Sides": [
-            "Lumpiang Shanghai",
-            "Tokwa't Baboy",
-            "Chicharon Bulaklak",
-            "Kwek-Kwek"
-        ],
-        "Desserts": [
-            "Halo-Halo",
-            "Leche Flan",
-            "Turon",
-            "Buko Pandan"
-        ],
-        "Drinks": [
-            "Coke",
-            "Sprite",
-            "Iced Tea",
-            "Calamansi Juice"
-        ]
+        "Ulam": {
+            "Adobo": 120,
+            "Sinigang": 150,
+            "Kare-Kare": 180,
+            "Chicken Inasal": 140,
+            "Bistek Tagalog": 160
+        },
+        "Rice": {
+            "Plain Rice": 20,
+            "Sinangag": 35,
+            "Brown Rice": 40
+        },
+        "Sides": {
+            "Lumpiang Shanghai": 60,
+            "Tokwa't Baboy": 80,
+            "Chicharon Bulaklak": 90,
+            "Kwek-Kwek": 50
+        },
+        "Desserts": {
+            "Halo-Halo": 90,
+            "Leche Flan": 70,
+            "Turon": 40,
+            "Buko Pandan": 60
+        },
+        "Drinks": {
+            "Coke": 45,
+            "Sprite": 45,
+            "Iced Tea": 40,
+            "Calamansi Juice": 35
+        }
     }
 }
 
@@ -87,14 +89,16 @@ def get_data(destination, deep_dest=None):
 # Update values in the cart
 def update_cart(item_name):
     cart_orders = master_dict.get("cart_orders")
+    current_category = master_dict.get("current_category")
 
-    if item_name in cart_orders.keys():
+    if item_name in cart_orders:
         quantity = cart_orders[item_name].get("quantity")
         quantity += 1
         quantity_dict = {"quantity": quantity}
         cart_orders[item_name].update(quantity_dict)
     else:
-        item_dict = { item_name: {"quantity": 1} }
+        item_cost = master_dict["item_names"][current_category].get(item_name)
+        item_dict = { item_name: {"quantity": 1, "cost": item_cost} }
         cart_orders.update(item_dict)
 
 # Process order details into readable format
@@ -109,3 +113,16 @@ def process_item_grid(item_row, item_column):
     item_column += 1
 
     return item_row, item_column
+
+def remove_item():
+    listbox = master_dict["cart_widgets"]["listbox"]
+    orders = list(master_dict["cart_orders"].keys())
+    cart_orders = master_dict["cart_orders"]
+    selected_item_index = listbox.curselection()
+
+    if not selected_item_index:
+        return
+
+    selected_item = orders[selected_item_index[0]]
+    listbox.delete(selected_item_index[0])
+    del cart_orders[selected_item]

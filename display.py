@@ -54,7 +54,7 @@ def set_up_page(page_number):
             create_third_page()
             make_category_cards()
             make_item_cards(len(control.retrieve_data("item_names").get(control.retrieve_data("current_category"))))
-            update_items(page_number)
+            update_items()
         case 4:
             create_fourth_page()
 
@@ -201,8 +201,9 @@ def create_third_page():
     category_frm = tk.Frame(main_frm, bg="white")
     item_frm = tk.Frame(main_frm, bg="white")
     cart_frm = tk.Frame(main_frm, bg="#fafafa")
+    listbox_frm = tk.Frame(cart_frm, bg="white")
     cart_button_frm = tk.Frame(main_frm, bg="white")
-    button_frm = tk.Frame(main_frm, padx=5, bg="white")
+    button_frm = tk.Frame(main_frm, padx=5)
 
     cart_frm.columnconfigure(0, weight=1)
     cart_frm.columnconfigure(1, weight=2)
@@ -210,15 +211,21 @@ def create_third_page():
 
     cart_heading = tk.Label(
         cart_frm,
-        text="Cart",
+        text="Order Details",
         font=("Arial", 14, "bold"),
         bg="#fafafa"
     )
 
     cart_listbox = tk.Listbox(
-        cart_frm,
+        listbox_frm,
         width=35,
-        height=1
+        height=8
+    )
+
+    cart_scrollbar = ttk.Scrollbar(
+        listbox_frm,
+        orient="vertical",
+        command=cart_listbox.yview
     )
 
     cart_total_lbl = tk.Label(
@@ -232,7 +239,8 @@ def create_third_page():
         cart_button_frm,
         text="Remove Selected",
         bg="tomato",
-        fg="white"
+        fg="white",
+        command=lambda: control.delete_selected()
     )
 
     clear_cart_btn = tk.Button(
@@ -248,6 +256,7 @@ def create_third_page():
         bg="white"
     )
 
+    # ToDo: Connect to the review page of ordersequence.py
     done_btn = tk.Button(
         button_frm,
         text="Done",
@@ -255,10 +264,14 @@ def create_third_page():
         bg="white"
     )
 
+    cart_listbox["yscrollcommand"] = cart_scrollbar.set
+
     # Display all widgets
     cart_heading.grid(row=0, column=0, sticky="n")
-    cart_listbox.grid(row=0, column=1, sticky="nsew", padx=10)
-    cart_total_lbl.grid(row=0, column=2, sticky="n")
+    cart_listbox.pack(fill="both", side="left")
+    cart_scrollbar.pack(fill="y", side="right")
+    listbox_frm.grid(row=1, column=0, sticky="nsew", padx=10)
+    cart_total_lbl.grid(row=2, column=0, columnspan=2, sticky="n")
     remove_selected_btn.grid(row=0, column=0)
     clear_cart_btn.grid(row=0, column=1)
     cancel_btn.grid(row=0, column=0, padx=5)
@@ -325,7 +338,7 @@ def make_item_cards(amount):
     current_category = control.retrieve_data("current_category")
     # Makes an item button by amount times
     for item in range(amount):
-        item_name = control.retrieve_data("item_names")[current_category][item]
+        item_name = list(control.retrieve_data("item_names")[current_category].keys())[item]
         item_btn = tk.Button(
             control.retrieve_data("pages", "frames").get("item"),
             text=item_name,
@@ -347,7 +360,7 @@ def make_item_cards(amount):
 # Store chosen item to cart
 def add_to_cart(item_name):
     control.pass_to_cart(item_name)
-    control.update_page(control.retrieve_data("current_page"))
+    update_cart()
 
 # Change item display according to category
 def change_category(_category_name):
@@ -355,7 +368,7 @@ def change_category(_category_name):
     control.pass_data(_category_name, "current_category")
 
     make_item_cards(amount = len(control.retrieve_data("item_names")[_category_name]))
-    control.update_page(control.retrieve_data("current_page"))
+    update_items()
 
 # Resets configuration of main frame
 def reset_main():
@@ -377,35 +390,46 @@ def clear_screen():
             control.retrieve_data("pages", "frames").get(frame).grid_remove()
 
 # Display item widgets
-def update_items(page_number):
-    match page_number:
-        case 3:
-            item_frm = control.retrieve_data("pages", "frames")["item"]
-            item_frm.columnconfigure(0, weight=1)
-            item_frm.columnconfigure(1, weight=1)
-            item_frm.columnconfigure(2, weight=1)
+def update_items():
+    item_frm = control.retrieve_data("pages", "frames")["item"]
+    item_frm.columnconfigure(0, weight=1)
+    item_frm.columnconfigure(1, weight=1)
+    item_frm.columnconfigure(2, weight=1)
 
-            items = control.retrieve_data("items")
-            item_row = 0
-            item_column = 0
+    items = control.retrieve_data("items")
+    item_row = 0
+    item_column = 0
 
-            for item in items:
-                item_row, item_column = control.process_item_grid(item_row, item_column)
-                item.grid(row=item_row, column=item_column, sticky="nsew", padx=5, pady=5)
+    for item in items:
+        item_row, item_column = control.process_item_grid(item_row, item_column)
+        item.grid(row=item_row, column=item_column, sticky="nsew", padx=5, pady=5)
 
-            item_details = []
-            cart_listbox = control.retrieve_data("cart_widgets")["listbox"]
-            cart_total = control.retrieve_data("cart_widgets")["total"]
-            orders = control.retrieve_data("cart_orders")
+def update_cart():
+    item_details = []
+    total_cost = 0
+    cart_listbox = control.retrieve_data("cart_widgets")["listbox"]
+    cart_total = control.retrieve_data("cart_widgets")["total"]
+    orders = control.retrieve_data("cart_orders")
 
-            if orders:
-                for item in list(orders.keys()):
-                    quantity = orders[item]["quantity"]
-                    item_details.append(f"{item} x{quantity}")
+    if not orders:
+        cart_total.config(text=f"Total: PHP 0.00")
+        return
 
-                cart_items = tk.Variable(value=item_details)
-                if cart_listbox.cget("height") != 10:
-                    cart_listbox.config(height=len(orders), listvariable=cart_items)
+    for item in list(orders.keys()):
+        quantity = orders[item]["quantity"]
+        cost = orders[item]["cost"]
+        item_details.append(f"{item} x{quantity} = PHP {cost * quantity}")
+
+    for item in list(orders.keys()):
+        quantity = orders[item]["quantity"]
+        cost = orders[item]["cost"]
+        total_cost += quantity * cost
+
+    cart_total.config(text=f"Total: PHP {total_cost}.00")
+    cart_items = tk.Variable(value=item_details)
+
+    cart_listbox.config(listvariable=cart_items)
+
 
 def render_widgets(page_number):
     frames = control.retrieve_data("pages", "frames")
