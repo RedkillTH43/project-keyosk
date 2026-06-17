@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-
-import control
 import control as control
 
 # Configure main frame's row and column weight
@@ -28,6 +26,12 @@ def configure_main(page_number):
             main_frm.rowconfigure(1, weight=1)
             main_frm.rowconfigure(2, weight=1)
         case 7:
+            main_frm.rowconfigure(1, weight=0)
+            main_frm.rowconfigure(2, weight=0)
+            main_frm.rowconfigure(3, weight=1)
+        case 8:
+            main_frm.columnconfigure(0, weight=1)
+            main_frm.columnconfigure(1, weight=1)
             main_frm.rowconfigure(1, weight=0)
             main_frm.rowconfigure(2, weight=0)
             main_frm.rowconfigure(3, weight=1)
@@ -76,19 +80,19 @@ def set_up_page(page_number):
             create_sixth_page()
         case 7:
             create_seventh_page()
+        case 8:
+            create_eighth_page()
 
     # Make is_page_loaded of specified page to True
     control.pass_data(True, "pages", "is_page_loaded")
 
 # Create home page
 def home_page():
-    next_page = control.retrieve_data("current_page") + 1
-
     main_frm = control.retrieve_data("initial_frames")["main"]
+    order_management_page = 8
 
     heading_frm = tk.Frame(main_frm, bg="white")
     subtitle_frm = tk.Frame(main_frm, bg="white")
-    #separator_frm = tk.Frame(main_frm)
     button_frm = tk.Frame(main_frm, bg="white")
 
     image_frm = tk.Frame(
@@ -126,7 +130,8 @@ def home_page():
         width=15,
         height=2,
         font=("Arial", 12, "bold"),
-        bg="white"
+        bg="white",
+        command=lambda: control.switch_to_page(order_management_page, callback=control.sort_records)
     )
 
     start_btn = tk.Button(
@@ -135,7 +140,7 @@ def home_page():
         width=20,
         height=2,
         font=("Arial", 12, "bold"),
-        command=lambda: control.switch_to_page(next_page),
+        command=update_order_number,
         bg="white"
     )
 
@@ -153,11 +158,17 @@ def home_page():
         "button": button_frm
     }
 
+    widgets_dict = {
+        "see_order_btn": see_order_btn,
+        "start_btn": start_btn
+    }
+
     page_dict = {
         control.retrieve_data("current_page"): { "frames": frames_dict, "is_page_loaded": False }
     }
 
     control.pass_data(page_dict, "pages")
+    control.pass_data(widgets_dict, "home_widgets")
 
 def create_second_page():
     main_frm = control.retrieve_data("initial_frames")["main"]
@@ -183,7 +194,7 @@ def create_second_page():
         fg="white",
         width=8,
         height=12,
-        command=lambda: control.pass_data({"mode": "dine-in"}, "order_details", switch=True),
+        command=lambda: control.pass_data({ control.retrieve_data("current_order_number"): {"mode": "dine-in"}}, "order_details", switch=True),
     )
 
     take_btn = tk.Button(
@@ -194,7 +205,7 @@ def create_second_page():
         fg="white",
         width=8,
         height=12,
-        command=lambda: control.pass_data({"mode": "take-out"}, "order_details", switch=True)
+        command=lambda: control.pass_data({ control.retrieve_data("current_order_number"): {"mode": "take-out"}}, "order_details", switch=True)
     )
 
     # Display all widgets
@@ -280,7 +291,7 @@ def create_third_page():
         text="Done",
         cursor="hand2",
         bg="white",
-        command=lambda: control.process_order(),
+        command=lambda: control.switch_to_page(4),
     )
 
     cart_listbox["yscrollcommand"] = cart_scrollbar.set
@@ -318,7 +329,7 @@ def create_third_page():
 
 # Make the widgets and frames for the fourth page
 def create_fourth_page():
-    next_page = control.retrieve_data("current_page") + 1
+    prev_page = control.retrieve_data("current_page") - 1
     main_frm = control.retrieve_data("initial_frames")["main"]
     heading_frm = tk.Frame(main_frm, bg="white")
     order_details_frm = tk.Frame(main_frm, bg="white")
@@ -349,14 +360,14 @@ def create_fourth_page():
         button_frm,
         text="GO BACK",
         width=15,
-        command=clear_textbox,
+        command=lambda: control.switch_to_page(prev_page, callback=clear_textbox),
     )
 
     continue_btn = tk.Button(
         button_frm,
         text="CONTINUE",
         width=15,
-        command=lambda: control.switch_to_page(next_page)
+        command=lambda: control.process_order(True)
     )
 
     # Display all widgets
@@ -416,7 +427,7 @@ def create_fifth_page():
         bd=2,
         relief="solid",
         bg="lightyellow",
-        command=lambda: control.switch_to_page(thank_you_page)
+        command=lambda: update_details("cash", page=thank_you_page)
     )
 
     # Display all widgets
@@ -437,8 +448,8 @@ def create_fifth_page():
     control.pass_data(page_dict, "pages")
 
 def create_sixth_page():
-    prev_page = control.retrieve_data("current_page") - 1
     next_page = control.retrieve_data("current_page") + 1
+    prev_page = control.retrieve_data("current_page") - 1
     main_frm = control.retrieve_data("initial_frames")["main"]
     scan_box_frm = tk.Frame(main_frm, bg="white", relief="solid", bd=2)
     scan_area_frm = tk.Frame(scan_box_frm, width=380, height=250, bd=2, relief="solid", bg="lightgray")
@@ -473,7 +484,7 @@ def create_sixth_page():
         height=2,
         bd=1,
         bg="lightblue",
-        command=lambda: control.switch_to_page(next_page)
+        command=lambda: update_details("cashless", page=next_page)
     )
 
     # Display all widgets
@@ -500,12 +511,13 @@ def create_seventh_page():
     heading_frm = tk.Frame(main_frm, bg="white")
     order_box_frm = tk.Frame(main_frm, bg="white", bd=2, relief="solid")
     button_frm = tk.Frame(main_frm, bg="white")
+    order_number = control.retrieve_data("current_order_number")
 
     heading_lbl = tk.Label(heading_frm, text="THANK YOU!", font=("Arial", 30, "bold"), fg="green", bg="white")
     subheading_lbl = tk.Label(heading_frm, text="Here's your order no:", font=("Arial", 20), bg="white")
     order_title_lbl = tk.Label(order_box_frm, text="ORDER NO.", font=("Arial", 20, "bold"), bg="white")
     box_separator = ttk.Separator(order_box_frm, orient="horizontal")
-    order_number_lbl = tk.Label(order_box_frm, text="39", font=("Arial", 120, "bold"), fg="red", bg="white")
+    order_number_lbl = tk.Label(order_box_frm, text=str(order_number), font=("Arial", 120, "bold"), fg="red", bg="white")
 
     ok_btn = tk.Button(
         button_frm,
@@ -533,6 +545,50 @@ def create_seventh_page():
         "button": button_frm
     }
 
+    widgets_dict = {
+        "order_number": order_number_lbl
+    }
+
+    page_dict = {
+        control.retrieve_data("current_page"): { "frames": frames_dict, "is_page_loaded": False }
+    }
+
+    control.pass_data(page_dict, "pages")
+    control.pass_data(widgets_dict, "payment_widgets")
+
+def create_eighth_page():
+    main_frm = control.retrieve_data("initial_frames")["main"]
+    heading_frm = tk.Frame(main_frm, bg="white")
+    in_progress_frm = tk.Frame(main_frm, bg="white")
+    done_frm = tk.Frame(main_frm, bg="white")
+    button_frm = tk.Frame(main_frm, bg="white")
+
+    heading_lbl = tk.Label(heading_frm, text="CURRENT ORDERS", font=("Arial", 22), bg="light yellow")
+    in_progress_lbl = tk.Label(in_progress_frm, text="In-Progress", font=("Arial", 16), bg="white")
+    done_lbl = tk.Label(done_frm, text="Done", font=("Arial", 16), bg="white")
+    go_back_btn = tk.Button(
+        button_frm, text="GO BACK", font=("Arial", 14, "bold"), width=15,
+        command=lambda: control.switch_to_page(1)
+    )
+
+    in_progress_frm.columnconfigure(0, weight=1)
+    done_frm.columnconfigure(0, weight=1)
+
+    # Display all widgets
+    heading_lbl.grid(row=0, column=0)
+    in_progress_lbl.grid(row=0, column=0, sticky="n")
+    done_lbl.grid(row=0, column=0, sticky="n")
+    in_progress_frm.grid(row=0, column=0, sticky="n", padx=10)
+    done_frm.grid(row=0, column=1, sticky="n", padx=10)
+    go_back_btn.grid(row=0, column=1)
+
+    frames_dict = {
+        "heading": heading_frm,
+        "in-progress": in_progress_frm,
+        "done": done_frm,
+        "button": button_frm
+    }
+
     page_dict = {
         control.retrieve_data("current_page"): { "frames": frames_dict, "is_page_loaded": False }
     }
@@ -541,13 +597,14 @@ def create_seventh_page():
 
 # Switch to specified page
 def switch_to(page_number, callback=None):
-    if callback:
-        callback()
     control.clear_page()
     control.pass_data(page_number, "current_page")
     if not control.retrieve_data("pages", "is_page_loaded"):
         control.load_page(page_number)
     control.render_page(page_number)
+
+    if callback:
+        callback()
 
 # Create category buttons
 def make_category_cards():
@@ -597,6 +654,18 @@ def make_item_cards(amount):
     # Returns the array
     control.pass_data(items_arr, "items")
 
+def update_details(payment_mode, page):
+    current_order_number = control.retrieve_data("current_order_number")
+    control.update_order_details("Unpaid", "payment_status")
+
+    if payment_mode == "cashless":
+        control.update_order_details("Paid", "payment_status")
+
+    control.update_order_details("in-progress", "status")
+    control.switch_to_page(page)
+
+    control.retrieve_data("payment_widgets")["order_number"].config(text=str(current_order_number))
+
 # Store chosen item to cart
 def add_to_cart(item_name):
     control.pass_to_cart(item_name)
@@ -609,6 +678,27 @@ def change_category(_category_name):
 
     make_item_cards(amount = len(control.retrieve_data("item_names")[_category_name]))
     update_items()
+
+def create_order_buttons(parent, order_list):
+    container = tk.Frame(parent, bg="white")
+    container.grid(row=1, column=0)
+
+    row = 0
+    col = 0
+    for order_no in order_list:
+        tk.Button(
+            container,
+            text=str(order_no),
+            font=("Arial", 16, "bold"),
+            width=6,
+            height=2,
+            command=lambda: ()
+        ).grid(row=row, column=col, padx=8, pady=8)
+
+        col += 1
+        if col > 1:
+            col = 0
+            row += 1
 
 # Resets configuration of main frame
 def reset_main():
@@ -631,21 +721,26 @@ def clear_screen():
 
 def clear_textbox():
     textbox = control.retrieve_data("review_widgets")["textbox"]
-    prev_page = control.retrieve_data("current_page") - 1
     textbox.config(state="normal")
     control.clear_widgets(textbox)
-    control.switch_to_page(prev_page)
 
 def clear_listbox():
     listbox = control.retrieve_data("cart_widgets")["listbox"]
     total_lbl = control.retrieve_data("cart_widgets")["total"]
     control.clear_widgets(listbox)
-    control.clear_orders()
+    control.clear_orders("cart_orders")
     total_lbl.config(text="Total: PHP 0.00")
 
 def clear_order_details():
     clear_listbox()
     clear_textbox()
+    control.clear_orders("order_details")
+
+def update_order_number():
+    next_page = control.retrieve_data("current_page") + 1
+    current_order_number = control.retrieve_data("current_order_number")
+    control.pass_data(current_order_number + 1, "current_order_number")
+    control.switch_to_page(next_page)
 
 # Display item widgets
 def update_items():
@@ -706,6 +801,15 @@ def update_review_widgets():
     total_lbl.config(text=f"{control.retrieve_data('cart_widgets')['total'].cget('text')}")
     textbox.config(state="disabled")
 
+def update_order_cards():
+    in_progress_items = control.retrieve_data("in_progress_items")
+    done_items = control.retrieve_data("done_items")
+    in_progress_frm = control.retrieve_data("pages", "frames")["in-progress"]
+    done_frm = control.retrieve_data("pages", "frames")["done"]
+
+    create_order_buttons(in_progress_frm, in_progress_items)
+    create_order_buttons(done_frm, done_items)
+
 def render_widgets(page_number):
     frames = control.retrieve_data("pages", "frames")
     match page_number:
@@ -744,6 +848,11 @@ def render_widgets(page_number):
             frames.get("heading").grid(row=1, column=0)
             frames.get("order_box").grid(row=2, column=0, pady=30)
             frames.get("button").grid(row=3, column=0)
+        case 8:
+            frames.get("heading").grid(row=1, column=0, columnspan=2, pady=30)
+            frames.get("in-progress").grid(row=2, column=0, sticky="n", pady=30)
+            frames.get("done").grid(row=2, column=1, sticky="n", pady=30)
+            frames.get("button").grid(row=3, column=0, columnspan=2, sticky="s", pady=20)
 
 def update_widgets(widgets, destroy=False, clear=False):
     if destroy:

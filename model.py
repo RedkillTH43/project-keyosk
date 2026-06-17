@@ -1,26 +1,23 @@
-# Initialize master dictionary
-from turtledemo.clock import current_day
-
 import control
 
+# Initialize master dictionary
 master_dict = {
     "pages": {},
     "initial_frames": {},
     "categories": [],
     "items": [],
     "images": {},
+    "current_order_number": 0,
     "current_page": 0,
     "current_category": "Ulam",
+    "order_details": {},
     "order_records": [],
-    "order_details": {
-        "mode": "",
-        "orders": {},
-        "total": 0,
-        "payment_status": "Unpaid",
-        "status": "in-progress"
-    },
+    "in_progress_items": [],
+    "done_items": [],
+    "home_widgets": {},
     "cart_widgets": {},
     "review_widgets": {},
+    "payment_widgets": {},
     "cart_orders": {},
     "MAX_ROW": 8,
     "MAX_COLUMN": 4,
@@ -77,7 +74,7 @@ def update_data(data_object, destination, deep_dest=None, switch=False):
     else:
         try: # Run this if destination is a dictionary
             master_dict[destination].update(data_object)
-        except AttributeError, TypeError: # Run this if not
+        except (AttributeError, TypeError): # Run this if not
             master_dict[destination] = data_object
 
     if switch:
@@ -110,8 +107,43 @@ def update_cart(item_name):
         cart_orders.update(item_dict)
 
 # Process order details into readable format
-def process_order():
-    control.switch_to_page(4)
+def process_order(switch=False):
+    order_details = master_dict["order_details"]
+    next_page = master_dict["current_page"] + 1
+    current_order_number = master_dict["current_order_number"]
+    orders = master_dict["cart_orders"]
+    total_cost = 0
+
+    for item in list(orders.keys()):
+        quantity = orders[item].get("quantity")
+        cost = orders[item].get("cost")
+        total_cost += quantity * cost
+
+    order_details[current_order_number]["orders"] = orders
+    order_details[current_order_number].update({ "total": total_cost })
+    master_dict["order_records"].append(order_details)
+    if switch:
+        control.switch_to_page(next_page)
+
+def update_order_details(data, destination):
+    current_order_number = master_dict["current_order_number"]
+    master_dict["order_details"][current_order_number].update({destination: data})
+
+def sort_records():
+    order_records = master_dict["order_records"]
+    in_progress_list = []
+    done_list = []
+    counter = 1
+
+    for record in order_records:
+        if record[counter].get("status") == "in-progress":
+            in_progress_list.append(list(record.keys())[0])
+        else:
+            done_list.append(list(record.keys())[0])
+        counter += 1
+
+    master_dict["in_progress_items"] = in_progress_list
+    master_dict["done_items"] = done_list
 
 # Process the position change of items
 def process_item_grid(item_row, item_column):
@@ -135,6 +167,5 @@ def remove_item():
     listbox.delete(selected_item_index[0])
     del cart_orders[selected_item]
 
-def clear_items():
-    cart_orders = master_dict["cart_orders"]
-    cart_orders.clear()
+def clear_items(destination):
+    master_dict[destination] = {}

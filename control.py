@@ -46,12 +46,19 @@ def pass_to_cart(item_name):
     model.update_cart(item_name)
 
 # Process order details
-def process_order():
-    model.process_order()
+def process_order(switch=False):
+    model.process_order(switch)
+
+def update_order_details(data, destination):
+    model.update_order_details(data, destination)
+
+def sort_records():
+    model.sort_records()
+    display_mod.update_order_cards()
 
 def delete_selected():
     model.remove_item()
     display_mod.update_cart()
 
-def clear_orders():
-    model.clear_items()
+def clear_orders(destination):
+    model.clear_items(destination)
