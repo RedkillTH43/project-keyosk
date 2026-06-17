@@ -586,7 +586,7 @@ def create_eighth_page():
     done_frm = tk.Frame(main_frm, bg="white")
     button_frm = tk.Frame(main_frm, bg="white")
 
-    heading_lbl = tk.Label(heading_frm, text="CURRENT ORDERS", font=("Arial", 22), bg="light yellow")
+    heading_lbl = tk.Label(heading_frm, text="CURRENT ORDERS", font=("Arial", 22), bg="white")
     in_progress_lbl = tk.Label(in_progress_frm, text="In-Progress", font=("Arial", 16), bg="white")
     done_lbl = tk.Label(done_frm, text="Done", font=("Arial", 16), bg="white")
     go_back_btn = tk.Button(
@@ -622,8 +622,9 @@ def create_ninth_page():
     prev_page = control.retrieve_data("current_page") - 1
     main_frm = control.retrieve_data("initial_frames")["main"]
     heading_frm = tk.Frame(main_frm, bg="white")
-    content_frm = tk.Frame(main_frm, bg="white", bd=2, relief="solid")
-    table_frm = tk.Frame(content_frm)
+    textbox_frm = tk.Frame(main_frm, bg="white")
+    scrollbar = tk.Scrollbar(textbox_frm, orient="vertical")
+    table_textbox = tk.Text(textbox_frm)
     status_frm = tk.Frame(main_frm, bg="white")
     button_frm = tk.Frame(main_frm, bg="white")
 
@@ -631,21 +632,21 @@ def create_ninth_page():
         heading_frm,
         text="Order No.",
         font=("Arial", 22),
-        bg="red"
+        bg="white"
     )
 
     status_lbl = tk.Label(
         status_frm,
         text="Status: ",
         font=("Arial", 13),
-        bg="light yellow"
+        bg="white"
     )
 
     total_lbl = tk.Label(
         status_frm,
         text=f"Total: ₱",
         font=("Arial", 13),
-        bg="light yellow"
+        bg="white"
     )
 
     go_back_btn = tk.Button(
@@ -660,16 +661,20 @@ def create_ninth_page():
     status_frm.columnconfigure(0, weight=1)
     status_frm.columnconfigure(1, weight=1)
 
+    table_textbox["yscrollcommand"] = scrollbar.set
+    scrollbar.config(command=table_textbox.yview)
+
     # Display all widgets
-    heading_lbl.grid(row=0, column=0)
-    table_frm.grid(row=0, column=0, sticky="nsew")
-    status_lbl.grid(row=0, column=0, sticky="w")
-    total_lbl.grid(row=0, column=1, sticky="e")
+    heading_lbl.grid(row=0, column=0, sticky="ew")
+    table_textbox.grid(row=0, column=0)
+    scrollbar.grid(row=0, column=1, sticky="ns")
+    status_lbl.grid(row=0, column=0, sticky="w", padx=50)
+    total_lbl.grid(row=0, column=1, sticky="e", padx=50)
     go_back_btn.grid(row=0, column=0)
 
     frames_dict = {
         "heading": heading_frm,
-        "content": content_frm,
+        "textbox": textbox_frm,
         "status": status_frm,
         "button": button_frm
     }
@@ -678,7 +683,7 @@ def create_ninth_page():
         "heading": heading_lbl,
         "status": status_lbl,
         "total": total_lbl,
-        "table": table_frm
+        "textbox": table_textbox
     }
 
     page_dict = {
@@ -844,31 +849,17 @@ def clear_order_details():
 
 def update_order_info(order_num):
     control.switch_to_page(9)
-    content_frm = control.retrieve_data("pages", "frames")["content"]
-    table_frm = tk.Frame(content_frm, bg="white")
     heading_lbl = control.retrieve_data("management_widgets")["heading"]
+    textbox = control.retrieve_data("management_widgets")["textbox"]
     status_lbl = control.retrieve_data("management_widgets")["status"]
     total_lbl = control.retrieve_data("management_widgets")["total"]
     records = control.retrieve_data("order_records")
     item_names = control.retrieve_data("item_names")
 
-    control.retrieve_data("management_widgets")["table"].destroy()
-    control.pass_data({"table": table_frm}, "management_widgets")
-    table_frm.grid(row=0, column=0, sticky="nsew")
+    update_widgets(textbox, clear=True)
+    textbox.config(state="normal")
 
-    headers = ["Item", "Qty", "PHP"]
-    widths = [50, 8, 10]
-
-    for i, h in enumerate(headers):
-        tk.Label(
-            table_frm,
-            text=h,
-            font=("Arial", 13, "bold"),
-            bg="light green",
-            bd=1,
-            relief="solid",
-            width=widths[i]
-        ).grid(row=0, column=i, padx=2, pady=2)
+    textbox.insert(1.0, "-".ljust(80, "-") + "Item".ljust(50) + "Qty".ljust(8) + "PHP".ljust(22) + "-".ljust(80, "-"))
 
     record_object = {}
     items = []
@@ -890,56 +881,15 @@ def update_order_info(order_num):
     for idx, (cat, name, qty, price) in enumerate(items, start=1):
         subtotal = qty * price
         total += subtotal
+        image_object = control.retrieve_data("images")[cat][name]
 
-        item_frame = tk.Frame(table_frm, bg="white", bd=1, relief="solid")
-        item_frame.grid(row=idx, column=0, padx=2, pady=2, sticky="nsew")
-
-        img_box = picture_slot(item_frame, cat, name)
-        img_box.pack(side="left", padx=5, pady=5)
-
-        text_frame = tk.Frame(item_frame, bg="white")
-        text_frame.pack(side="left", fill="both", expand=True, padx=5)
-
-        tk.Label(
-            text_frame,
-            text=f"{cat} - {name}",
-            font=("Arial", 11),
-            bg="white",
-            anchor="w"
-        ).pack(anchor="w")
-
-        tk.Label(
-            text_frame,
-            text="Item description here",
-            font=("Arial", 9),
-            bg="white",
-            fg="gray",
-            anchor="w"
-        ).pack(anchor="w")
-
-        tk.Label(
-            table_frm,
-            text=str(qty),
-            font=("Arial", 11),
-            bg="white",
-            bd=1,
-            relief="solid",
-            width=8
-        ).grid(row=idx, column=1, padx=2, pady=2)
-
-        tk.Label(
-            table_frm,
-            text=f"₱{subtotal:.2f}",
-            font=("Arial", 11),
-            bg="white",
-            bd=1,
-            relief="solid",
-            width=10
-        ).grid(row=idx, column=2, padx=2, pady=2)
+        textbox.image_create(f"{idx + 1}.end", image=image_object)
+        textbox.insert(f"{idx + 1}.end", f" {cat} - {name}".ljust(34) + str(qty).ljust(8) + f"₱{subtotal:.2f}".ljust(23))
 
     heading_lbl.config(text=f"Order No. {order_num}")
     status_lbl.config(text=f"Status: {record_object.get("payment_status")}")
     total_lbl.config(text=f"Total: PHP {total}.00")
+    textbox.config(state="disabled")
 
 def update_order_number():
     current_order_number = control.retrieve_data("current_order_number")
@@ -1041,7 +991,7 @@ def render_widgets(page_number):
         case 2:
             # Display all frames
             frames.get("heading").grid(row=1, column=0, columnspan=2, sticky="n", pady=30)
-            frames.get("button").grid(row=2, column=0, columnspan=2, padx=20, pady=20)
+            frames.get("button").grid(row=2, column=0, columnspan=2, padx=20, pady=30)
         case 3:
             for category in control.retrieve_data("categories"):
                 category.pack(anchor="w", pady=5, padx=10)
@@ -1071,10 +1021,16 @@ def render_widgets(page_number):
             frames.get("done").grid(row=2, column=1, sticky="n", pady=30)
             frames.get("button").grid(row=3, column=0, columnspan=2, sticky="s", pady=20)
         case 9:
-            frames.get("heading").grid(row=1, column=0, sticky="n", pady=20)
-            frames.get("content").grid(row=2, column=0, sticky="ns", pady=10)
-            frames.get("status").grid(row=3, column=0, sticky="new", pady=10, padx=80)
+            frames.get("heading").grid(row=1, column=0, sticky="n", pady=10)
+            frames.get("textbox").grid(row=2, column=0, pady=10)
+            frames.get("status").grid(row=3, column=0, sticky="n", pady=10)
             frames.get("button").grid(row=4, column=0, sticky="s", pady=10)
+
+            textbox = control.retrieve_data("management_widgets")["textbox"]
+
+            if textbox:
+                textbox.config(state="normal")
+                textbox.delete("end")
 
 def update_widgets(widgets, destroy=False, clear=False):
     if destroy:

@@ -7,6 +7,9 @@ root = tk.Tk()
 root.title("Project Keyosk")
 root.geometry("1000x800")
 
+# ToDo: Fix order management module UI
+# ToDo: Add colors
+
 # Create images
 category_names = control.retrieve_data("category_names")
 item_names = control.retrieve_data("item_names")
@@ -44,7 +47,7 @@ for category in category_names:
 
     for item in item_names[category]:
         image_object = PhotoImage(file=f"./assets/{category.lower()}/{item.lower()}.png")
-        image_object = image_object.subsample(16, "")
+        image_object = image_object.subsample(20, "")
         images_dict[category].update({item: image_object})
 
 control.pass_data(images_dict, "images")
