@@ -883,6 +883,11 @@ def clear_textbox():
 def clear_listbox():
     listbox = control.retrieve_data("cart_widgets")["listbox"]
     total_lbl = control.retrieve_data("cart_widgets")["total"]
+    items = control.retrieve_data("items")
+    category_names = control.retrieve_data("category_names")
+    control.destroy_widgets(items)
+
+    control.pass_data(category_names[0], "current_category")
     control.clear_widgets(listbox)
     control.clear_orders("cart_orders")
     total_lbl.config(text="Total: PHP 0.00")
@@ -1092,6 +1097,8 @@ def render_widgets(page_number):
             frames.get("heading").grid(row=1, column=0, columnspan=2, sticky="n", pady=30)
             frames.get("button").grid(row=2, column=0, columnspan=2, padx=20, pady=30)
         case 3:
+            change_category(control.retrieve_data("current_category"))
+            update_page(3)
             for category in control.retrieve_data("categories"):
                 category.pack(anchor="w", pady=5, padx=10)
 
