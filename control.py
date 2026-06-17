@@ -6,8 +6,8 @@ def load_screen(root):
     display_mod.set_up_main_screen(root)
 
 # Switch to specified page
-def switch_to_page(page_number):
-    display_mod.switch_to(page_number)
+def switch_to_page(page_number, callback=None):
+    display_mod.switch_to(page_number, callback)
 
 # Clear specified page
 def clear_page():

@@ -11,7 +11,14 @@ master_dict = {
     "images": {},
     "current_page": 0,
     "current_category": "Ulam",
-    "order_details": {},
+    "order_records": [],
+    "order_details": {
+        "mode": "",
+        "orders": {},
+        "total": 0,
+        "payment_status": "Unpaid",
+        "status": "in-progress"
+    },
     "cart_widgets": {},
     "review_widgets": {},
     "cart_orders": {},

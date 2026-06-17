@@ -10,7 +10,9 @@ root.geometry("600x800")
 # Create images
 category_image = PhotoImage(file="./assets/png.png")
 item_image = PhotoImage(file="./assets/item.png")
-images_dict = {"item_image": item_image, "category_image": category_image}
+scan_image = PhotoImage(file="./assets/300.png")
+
+images_dict = {"item_image": item_image, "category_image": category_image, "scan_image": scan_image}
 control.pass_data(images_dict, "images")
 
 control.load_screen(root)
