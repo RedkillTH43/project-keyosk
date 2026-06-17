@@ -590,7 +590,12 @@ def create_eighth_page():
     in_progress_lbl = tk.Label(in_progress_frm, text="In-Progress", font=("Arial", 16), bg="white")
     done_lbl = tk.Label(done_frm, text="Done", font=("Arial", 16), bg="white")
     go_back_btn = tk.Button(
-        button_frm, text="GO BACK", font=("Arial", 14, "bold"), width=15, cursor="hand2",
+        button_frm,
+        text="GO BACK",
+        font=("Arial", 14, "bold"),
+        cursor="hand2",
+        width=20,
+        height=2,
         command=lambda: control.switch_to_page(1)
     )
 
@@ -649,6 +654,15 @@ def create_ninth_page():
         bg="white"
     )
 
+    finish_order_btn = tk.Button(
+        button_frm,
+        text="FINISH ORDER",
+        font = ("Arial", 12, "bold"),
+        width = 20,
+        height = 2,
+        command = lambda: control.switch_to_page(prev_page, update_status)
+    )
+
     go_back_btn = tk.Button(
         button_frm,
         text="GO BACK",
@@ -670,7 +684,8 @@ def create_ninth_page():
     scrollbar.grid(row=0, column=1, sticky="ns")
     status_lbl.grid(row=0, column=0, sticky="w", padx=50)
     total_lbl.grid(row=0, column=1, sticky="e", padx=50)
-    go_back_btn.grid(row=0, column=0)
+    finish_order_btn.grid(row=0, column=0)
+    go_back_btn.grid(row=0, column=1)
 
     frames_dict = {
         "heading": heading_frm,
@@ -683,7 +698,8 @@ def create_ninth_page():
         "heading": heading_lbl,
         "status": status_lbl,
         "total": total_lbl,
-        "textbox": table_textbox
+        "textbox": table_textbox,
+        "finish_order": finish_order_btn
     }
 
     page_dict = {
@@ -737,14 +753,16 @@ def make_item_cards(amount):
     for item in range(amount):
         item_name = list(item_names[current_category].keys())[item]
         image_object = control.retrieve_data("images")[current_category][item_name]
+        text_info = f"{item_name}\nPHP {item_names[current_category][item_name]}.00"
+
         item_btn = tk.Button(
             control.retrieve_data("pages", "frames").get("item"),
-            text=f"{item_name}\nPHP {item_names[current_category][item_name]}.00",
+            text=text_info,
             font=("Arial", 12, "bold"),
             cursor="hand2",
             image=image_object,
             compound="top",
-            width=image_object.width(),
+            width=image_object.width() + 40,
             height=200,
             borderwidth=2,
             relief="solid",
@@ -759,11 +777,13 @@ def make_item_cards(amount):
 def update_details(payment_mode, page):
     current_order_number = control.retrieve_data("current_order_number")
     control.update_order_details("Unpaid", "payment_status")
+    control.update_order_details("in-progress", "status")
 
     if payment_mode == "cashless":
         control.update_order_details("Paid", "payment_status")
+        control.update_order_details("done", "status")
 
-    control.update_order_details("in-progress", "status")
+
     control.switch_to_page(page)
 
     control.retrieve_data("payment_widgets")["order_number"].config(text=str(current_order_number))
@@ -789,21 +809,27 @@ def change_category(_category_name):
     make_item_cards(amount = len(control.retrieve_data("item_names")[_category_name]))
     update_page(3)
 
-def create_order_buttons(parent, order_list):
+def create_order_buttons(parent, order_list, status):
     container = tk.Frame(parent, bg="white")
     container.grid(row=1, column=0)
 
     row = 0
     col = 0
     for order_no in order_list:
-        tk.Button(
+        order_button = tk.Button(
             container,
             text=str(order_no),
             font=("Arial", 16, "bold"),
             width=6,
             height=2,
             command=lambda order_no=order_no: update_order_info(order_no)
-        ).grid(row=row, column=col, padx=8, pady=8)
+        )
+
+        order_button.grid(row=row, column=col, padx=8, pady=8)
+        destination = "in_progress_buttons"
+        if status == "done":
+            destination = "done_buttons"
+        control.pass_data({order_no: order_button}, destination)
 
         col += 1
         if col > 1:
@@ -853,8 +879,11 @@ def update_order_info(order_num):
     textbox = control.retrieve_data("management_widgets")["textbox"]
     status_lbl = control.retrieve_data("management_widgets")["status"]
     total_lbl = control.retrieve_data("management_widgets")["total"]
+    finish_order_btn = control.retrieve_data("management_widgets")["finish_order"]
     records = control.retrieve_data("order_records")
     item_names = control.retrieve_data("item_names")
+
+    control.pass_data(order_num, "selected_order_number")
 
     update_widgets(textbox, clear=True)
     textbox.config(state="normal")
@@ -890,6 +919,10 @@ def update_order_info(order_num):
     status_lbl.config(text=f"Status: {record_object.get("payment_status")}")
     total_lbl.config(text=f"Total: PHP {total}.00")
     textbox.config(state="disabled")
+    if "Unpaid" in status_lbl.cget("text"):
+        finish_order_btn.grid()
+    else:
+        finish_order_btn.grid_remove()
 
 def update_order_number():
     current_order_number = control.retrieve_data("current_order_number")
@@ -960,14 +993,35 @@ def update_order_cards():
     in_progress_frm = control.retrieve_data("pages", "frames")["in-progress"]
     done_frm = control.retrieve_data("pages", "frames")["done"]
 
-    create_order_buttons(in_progress_frm, in_progress_items)
-    create_order_buttons(done_frm, done_items)
+    create_order_buttons(in_progress_frm, in_progress_items, "in-progress")
+    create_order_buttons(done_frm, done_items, "done")
 
 def picture_slot(parent, category, item_name):
     image_object = control.retrieve_data("images")[category][item_name]
     slot = tk.Frame(parent, width=image_object.width(), height=image_object.height(), bg="white", bd=1, relief="solid")
     tk.Label(slot, image=image_object, font=("Arial", 10)).pack(expand=True)
     return slot
+
+def update_status():
+    records = control.retrieve_data("order_records")
+    order_num = control.retrieve_data("selected_order_number")
+    in_progress_items = control.retrieve_data("in_progress_items")
+    done_items = control.retrieve_data("done_items")
+    in_progress_buttons = control.retrieve_data("in_progress_buttons")
+    finish_order_btn = control.retrieve_data("management_widgets")["finish_order"]
+
+    for record in records:
+        if record == order_num:
+            record_object = records[record]
+            record_object["status"] = "done"
+            record_object["payment_status"] = "Paid"
+            break
+
+    in_progress_items.remove(order_num)
+    done_items.append(order_num)
+    in_progress_buttons[order_num].destroy()
+    finish_order_btn.grid_remove()
+    update_page(8)
 
 def update_page(page_number):
     match page_number:
@@ -998,7 +1052,7 @@ def render_widgets(page_number):
 
             frames.get("category").grid(row=1, column=0, sticky="nsew", pady=20)
             frames.get("item").grid(row=1, column=1, sticky="nsew", pady=20)
-            frames.get("cart").grid(row=1, column=2, columnspan=2)
+            frames.get("cart").grid(row=1, column=2, columnspan=2, sticky="n", pady=20)
             frames.get("button").grid(row=3, column=0, columnspan=4, sticky="s", pady=10)
         case 4:
             update_page(4)
@@ -1022,8 +1076,8 @@ def render_widgets(page_number):
             frames.get("button").grid(row=3, column=0, columnspan=2, sticky="s", pady=20)
         case 9:
             frames.get("heading").grid(row=1, column=0, sticky="n", pady=10)
-            frames.get("textbox").grid(row=2, column=0, pady=10)
-            frames.get("status").grid(row=3, column=0, sticky="n", pady=10)
+            frames.get("textbox").grid(row=2, column=0)
+            frames.get("status").grid(row=3, column=0, sticky="n")
             frames.get("button").grid(row=4, column=0, sticky="s", pady=10)
 
             textbox = control.retrieve_data("management_widgets")["textbox"]
