@@ -24,6 +24,10 @@ def clear_widgets(widgets):
 def load_page(page_number):
     display_mod.set_up_page(page_number)
 
+# Update specified page
+def update_page(page_number, frames=None):
+    display_mod.update_page(page_number)
+
 # Render specified page
 def render_page(page_number):
     display_mod.render_widgets(page_number)
@@ -54,11 +58,11 @@ def update_order_details(data, destination):
 
 def sort_records():
     model.sort_records()
-    display_mod.update_order_cards()
+    display_mod.update_page(8)
 
 def delete_selected():
     model.remove_item()
-    display_mod.update_cart()
+    display_mod.update_page(3)
 
 def clear_orders(destination):
     model.clear_items(destination)

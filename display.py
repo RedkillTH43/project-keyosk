@@ -71,7 +71,7 @@ def set_up_page(page_number):
             create_third_page()
             make_category_cards()
             make_item_cards(len(control.retrieve_data("item_names").get(control.retrieve_data("current_category"))))
-            update_items()
+            control.update_page(page_number)
         case 4:
             create_fourth_page()
         case 5:
@@ -82,6 +82,8 @@ def set_up_page(page_number):
             create_seventh_page()
         case 8:
             create_eighth_page()
+        case 9:
+            create_ninth_page()
 
     # Make is_page_loaded of specified page to True
     control.pass_data(True, "pages", "is_page_loaded")
@@ -140,7 +142,7 @@ def home_page():
         width=20,
         height=2,
         font=("Arial", 12, "bold"),
-        command=update_order_number,
+        command=lambda: update_page(1),
         bg="white"
     )
 
@@ -595,6 +597,77 @@ def create_eighth_page():
 
     control.pass_data(page_dict, "pages")
 
+def create_ninth_page():
+    prev_page = control.retrieve_data("current_page") - 1
+    main_frm = control.retrieve_data("initial_frames")["main"]
+    heading_frm = tk.Frame(main_frm, bg="white")
+    table_frm = tk.Frame(main_frm, bg="white")
+    status_frm = tk.Frame(main_frm, bg="white")
+    button_frm = tk.Frame(main_frm, bg="white")
+
+    headers = ["Item", "Qty", "PHP"]
+    widths = [28, 8, 10]
+
+    for i, h in enumerate(headers):
+        tk.Label(
+            table_frm,
+            text=h,
+            font=("Arial", 13, "bold"),
+            bg="light green",
+            bd=1,
+            relief="solid",
+            width=widths[i]
+        ).grid(row=0, column=i, padx=2, pady=2)
+
+
+    heading_lbl = tk.Label(
+        heading_frm,
+        text=f"Order No.",
+        font=("Arial", 22),
+        bg="red"
+    )
+
+    status_lbl = tk.Label(
+        status_frm,
+        text=f"Status: ",
+        font=("Arial", 13),
+        bg="light yellow"
+    )
+
+    total_lbl = tk.Label(
+        status_frm,
+        text=f"Total: ₱",
+        font=("Arial", 13),
+        bg="light yellow"
+    )
+
+    go_back_btn = tk.Button(
+        button_frm,
+        text="GO BACK",
+        font=("Arial", 14, "bold"),
+        width=15,
+        command=lambda: control.switch_to_page(prev_page)
+    )
+
+    # Display all widgets
+    heading_lbl.grid(row=0, column=0)
+    status_lbl.grid(row=0, column=0, sticky="w")
+    total_lbl.grid(row=0, column=1, sticky="e")
+    go_back_btn.grid(row=0, column=0)
+
+    frames_dict = {
+        "heading": heading_frm,
+        "table": table_frm,
+        "status": status_frm,
+        "button": button_frm
+    }
+
+    page_dict = {
+        control.retrieve_data("current_page"): { "frames": frames_dict, "is_page_loaded": False }
+    }
+
+    control.pass_data(page_dict, "pages")
+
 # Switch to specified page
 def switch_to(page_number, callback=None):
     control.clear_page()
@@ -669,7 +742,7 @@ def update_details(payment_mode, page):
 # Store chosen item to cart
 def add_to_cart(item_name):
     control.pass_to_cart(item_name)
-    update_cart()
+    update_page(3)
 
 # Change item display according to category
 def change_category(_category_name):
@@ -677,7 +750,7 @@ def change_category(_category_name):
     control.pass_data(_category_name, "current_category")
 
     make_item_cards(amount = len(control.retrieve_data("item_names")[_category_name]))
-    update_items()
+    update_page(3)
 
 def create_order_buttons(parent, order_list):
     container = tk.Frame(parent, bg="white")
@@ -692,7 +765,7 @@ def create_order_buttons(parent, order_list):
             font=("Arial", 16, "bold"),
             width=6,
             height=2,
-            command=lambda: ()
+            command=lambda: update_order_info(order_no)
         ).grid(row=row, column=col, padx=8, pady=8)
 
         col += 1
@@ -735,6 +808,74 @@ def clear_order_details():
     clear_listbox()
     clear_textbox()
     control.clear_orders("order_details")
+
+def update_order_info(order_num):
+    control.switch_to_page(9)
+    records = control.retrieve_data("order_records")
+    item_names = control.retrieve_data("item_names")
+    table_frm = control.retrieve_data("pages", "frames")["table"]
+    items = []
+    orders = []
+
+    for record in records:
+        if record == order_num:
+            orders = records[record]["orders"]
+            break
+
+    for order in orders:
+        for category in item_names:
+            if order in item_names[category]:
+                order_info = (category, order, orders[order].get("quantity"), orders[order].get("cost"))
+                items.append(order_info)
+
+    total = 0
+    print(items)
+    for idx, (cat, name, qty, price) in enumerate(items, start=1):
+        subtotal = qty * price
+        total += subtotal
+
+        item_frame = tk.Frame(table_frm, bg="white", bd=1, relief="solid")
+        item_frame.grid(row=idx, column=0, padx=2, pady=2, sticky="nsew")
+
+        text_frame = tk.Frame(item_frame, bg="white")
+        text_frame.pack(side="left", fill="both", expand=True, padx=5)
+
+        tk.Label(
+            text_frame,
+            text=f"{cat} - {name}",
+            font=("Arial", 11),
+            bg="white",
+            anchor="w"
+        ).pack(anchor="w")
+
+        tk.Label(
+            text_frame,
+            text="Item description here",
+            font=("Arial", 9),
+            bg="white",
+            fg="gray",
+            anchor="w"
+        ).pack(anchor="w")
+
+        tk.Label(
+            table_frm,
+            text=str(qty),
+            font=("Arial", 11),
+            bg="white",
+            bd=1,
+            relief="solid",
+            width=8
+        ).grid(row=idx, column=1, padx=2, pady=2)
+
+        tk.Label(
+            table_frm,
+            text=f"₱{subtotal:.2f}",
+            font=("Arial", 11),
+            bg="white",
+            bd=1,
+            relief="solid",
+            width=10
+        ).grid(row=idx, column=2, padx=2, pady=2)
 
 def update_order_number():
     next_page = control.retrieve_data("current_page") + 1
@@ -810,6 +951,18 @@ def update_order_cards():
     create_order_buttons(in_progress_frm, in_progress_items)
     create_order_buttons(done_frm, done_items)
 
+def update_page(page_number):
+    match page_number:
+        case 1:
+            update_order_number()
+        case 3:
+            update_cart()
+            update_items()
+        case 4:
+            update_review_widgets()
+        case 8:
+            update_order_cards()
+
 def render_widgets(page_number):
     frames = control.retrieve_data("pages", "frames")
     match page_number:
@@ -819,6 +972,9 @@ def render_widgets(page_number):
             frames.get("image").grid(row=2, column=0, columnspan=2, sticky="nsew", padx=30, pady=10)
             frames.get("subtitle").grid(row=3, column=0, columnspan=2, sticky="n", pady=10)
             frames.get("button").grid(row=4, column=0, columnspan=2, sticky="s", pady=20)
+
+            if control.retrieve_data("order_records"):
+                print(control.retrieve_data("order_records"))
 
         case 2:
             # Display all frames
@@ -834,7 +990,7 @@ def render_widgets(page_number):
             frames.get("cart_button").grid(row=3, column=0, columnspan=2, sticky="n", pady=10)
             frames.get("button").grid(row=4, column=0, columnspan=2, sticky="s", pady=10)
         case 4:
-            update_review_widgets()
+            update_page(4)
             frames.get("heading").grid(row=1, column=0, pady=10)
             frames.get("order_details").grid(row=2, column=0, sticky="n", pady=10)
             frames.get("button").grid(row=3, column=0, padx=10, pady=10)
@@ -853,6 +1009,11 @@ def render_widgets(page_number):
             frames.get("in-progress").grid(row=2, column=0, sticky="n", pady=30)
             frames.get("done").grid(row=2, column=1, sticky="n", pady=30)
             frames.get("button").grid(row=3, column=0, columnspan=2, sticky="s", pady=20)
+        case 9:
+            frames.get("heading").grid(row=1, column=0)
+            frames.get("table").grid(row=2, column=0)
+            frames.get("status").grid(row=3, column=0)
+            frames.get("button").grid(row=4, column=0)
 
 def update_widgets(widgets, destroy=False, clear=False):
     if destroy:

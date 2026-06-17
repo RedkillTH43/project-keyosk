@@ -11,7 +11,7 @@ master_dict = {
     "current_page": 0,
     "current_category": "Ulam",
     "order_details": {},
-    "order_records": [],
+    "order_records": {},
     "in_progress_items": [],
     "done_items": [],
     "home_widgets": {},
@@ -121,7 +121,7 @@ def process_order(switch=False):
 
     order_details[current_order_number]["orders"] = orders
     order_details[current_order_number].update({ "total": total_cost })
-    master_dict["order_records"].append(order_details)
+    master_dict["order_records"].update(order_details)
     if switch:
         control.switch_to_page(next_page)
 
@@ -136,10 +136,10 @@ def sort_records():
     counter = 1
 
     for record in order_records:
-        if record[counter].get("status") == "in-progress":
-            in_progress_list.append(list(record.keys())[0])
+        if order_records[record].get("status") == "in-progress":
+            in_progress_list.append(record)
         else:
-            done_list.append(list(record.keys())[0])
+            done_list.append(record)
         counter += 1
 
     master_dict["in_progress_items"] = in_progress_list
