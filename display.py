@@ -622,14 +622,14 @@ def create_ninth_page():
 
     heading_lbl = tk.Label(
         heading_frm,
-        text=f"Order No.",
+        text="Order No.",
         font=("Arial", 22),
         bg="red"
     )
 
     status_lbl = tk.Label(
         status_frm,
-        text=f"Status: ",
+        text="Status: ",
         font=("Arial", 13),
         bg="light yellow"
     )
@@ -662,11 +662,18 @@ def create_ninth_page():
         "button": button_frm
     }
 
+    widgets_dict = {
+        "heading": heading_lbl,
+        "status": status_lbl,
+        "total": total_lbl
+    }
+
     page_dict = {
         control.retrieve_data("current_page"): { "frames": frames_dict, "is_page_loaded": False }
     }
 
     control.pass_data(page_dict, "pages")
+    control.pass_data(widgets_dict, "management_widgets")
 
 # Switch to specified page
 def switch_to(page_number, callback=None):
@@ -811,14 +818,19 @@ def clear_order_details():
 
 def update_order_info(order_num):
     control.switch_to_page(9)
+    heading_lbl = control.retrieve_data("management_widgets")["heading"]
+    status_lbl = control.retrieve_data("management_widgets")["status"]
+    total_lbl = control.retrieve_data("management_widgets")["total"]
     records = control.retrieve_data("order_records")
     item_names = control.retrieve_data("item_names")
     table_frm = control.retrieve_data("pages", "frames")["table"]
+    record_object = {}
     items = []
     orders = []
 
     for record in records:
         if record == order_num:
+            record_object = records[record]
             orders = records[record]["orders"]
             break
 
@@ -829,7 +841,6 @@ def update_order_info(order_num):
                 items.append(order_info)
 
     total = 0
-    print(items)
     for idx, (cat, name, qty, price) in enumerate(items, start=1):
         subtotal = qty * price
         total += subtotal
@@ -876,6 +887,10 @@ def update_order_info(order_num):
             relief="solid",
             width=10
         ).grid(row=idx, column=2, padx=2, pady=2)
+
+    heading_lbl.config(text=f"Order No. {order_num}")
+    status_lbl.config(text=f"Status: {record_object.get("status").capitalize()}")
+    total_lbl.config(text=f"Total: PHP {total}.00")
 
 def update_order_number():
     next_page = control.retrieve_data("current_page") + 1

@@ -18,6 +18,7 @@ master_dict = {
     "cart_widgets": {},
     "review_widgets": {},
     "payment_widgets": {},
+    "management_widgets": {},
     "cart_orders": {},
     "MAX_ROW": 8,
     "MAX_COLUMN": 4,
