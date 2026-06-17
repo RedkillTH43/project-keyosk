@@ -7,7 +7,7 @@ class OrderManagementApp:
         self.root = root
         self.root.title("KEYOSK - Order Management")
         self.root.geometry("450x720")
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
 
         self.orders = {
             39: {

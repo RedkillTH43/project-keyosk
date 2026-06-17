@@ -7,9 +7,9 @@ master_dict = {
     "categories": [],
     "items": [],
     "images": {},
-    "current_order_number": 0,
+    "current_order_number": 1,
     "current_page": 0,
-    "current_category": "Ulam",
+    "current_category": "Filipino Dishes",
     "order_details": {},
     "order_records": {},
     "in_progress_items": [],
@@ -22,15 +22,17 @@ master_dict = {
     "cart_orders": {},
     "MAX_ROW": 8,
     "MAX_COLUMN": 4,
+    "dark_brown": "#8f664a",
+    "brown": "#c5a787",
     "category_names": [
-        "Ulam",
+        "Filipino Dishes",
         "Rice",
         "Sides",
         "Desserts",
         "Drinks"
     ],
     "item_names": {
-        "Ulam": {
+        "Filipino Dishes": {
             "Adobo": 120,
             "Sinigang": 150,
             "Kare-Kare": 180,
@@ -139,8 +141,10 @@ def sort_records():
     for record in order_records:
         if order_records[record].get("status") == "in-progress":
             in_progress_list.append(record)
-        else:
+        elif order_records[record].get("status") == "done":
             done_list.append(record)
+        else:
+            break
         counter += 1
 
     master_dict["in_progress_items"] = in_progress_list
