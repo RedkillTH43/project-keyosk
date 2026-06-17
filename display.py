@@ -42,9 +42,11 @@ def configure_main(page_number):
 
 # Set up initial frames for the main screen
 def set_up_main_screen(root):
-    main_frm = tk.Frame(root, bg="white")
-    title_frm = tk.Frame(main_frm, bg="white")
-    title_lbl = tk.Label(title_frm, text="Project Keyosk", font=("Arial", 20), pady=5, justify="center", bg="white")
+    global cream
+    cream = control.retrieve_data("cream")
+    main_frm = tk.Frame(root, bg=cream)
+    title_frm = tk.Frame(main_frm, bg=cream)
+    title_lbl = tk.Label(title_frm, text="Project Keyosk", font=("Arial", 20), pady=5, justify="center", bg=cream)
     separator = ttk.Separator(title_frm, orient="horizontal", style="secondary.Horizontal.TSeparator")
 
     main_frm.rowconfigure(0, weight=0)
@@ -99,22 +101,22 @@ def home_page():
     image_object = control.retrieve_data("images")["logo"]
     order_management_page = 8
 
-    heading_frm = tk.Frame(main_frm, bg="white")
-    subtitle_frm = tk.Frame(main_frm, bg="white")
-    button_frm = tk.Frame(main_frm, bg="white")
+    heading_frm = tk.Frame(main_frm, bg=cream)
+    subtitle_frm = tk.Frame(main_frm, bg=cream)
+    button_frm = tk.Frame(main_frm, bg=cream)
 
     image_frm = tk.Frame(
         main_frm,
         relief="solid",
         bd=2,
-        bg="white"
+        bg=cream
     )
 
     heading = tk.Label(
         heading_frm,
         text="WELCOME!",
         font=("Comic Sans MS", 30, "bold"),
-        bg="white"
+        bg=cream
     )
 
     image_object = tk.Label(
@@ -129,7 +131,7 @@ def home_page():
         subtitle_frm,
         text='"A Self-Ordering System Kiosk for Restaurants"',
         font=("Arial", 16),
-        bg="white"
+        bg=cream
     )
 
     see_order_btn = tk.Button(
@@ -138,6 +140,7 @@ def home_page():
         width=15,
         height=2,
         font=("Arial", 12, "bold"),
+        bg="white",
         cursor="hand2",
         command=lambda: control.switch_to_page(order_management_page, callback=control.sort_records)
     )
@@ -181,8 +184,8 @@ def home_page():
 
 def create_second_page():
     main_frm = control.retrieve_data("initial_frames")["main"]
-    heading_frm = tk.Frame(main_frm, bg="white")
-    button_frm = tk.Frame(main_frm, bg="white")
+    heading_frm = tk.Frame(main_frm, bg=cream)
+    button_frm = tk.Frame(main_frm, bg=cream)
     dine_in_image = control.retrieve_data("images")["dine-in"]
     take_out_image = control.retrieve_data("images")["take-out"]
 
@@ -194,7 +197,7 @@ def create_second_page():
         text="Where would you like to eat?",
         font=("Arial", 24),
         justify="center",
-        bg="white"
+        bg=cream
     )
 
     dine_btn = tk.Button(
@@ -238,12 +241,12 @@ def create_second_page():
 # Set up frames to be used
 def create_third_page():
     main_frm = control.retrieve_data("initial_frames").get("main")
-    category_frm = tk.Frame(main_frm, bg="white")
-    item_frm = tk.Frame(main_frm, bg="white")
-    cart_frm = tk.Frame(main_frm, bg="#fafafa")
-    listbox_frm = tk.Frame(cart_frm, bg="white")
-    cart_button_frm = tk.Frame(cart_frm, bg="white")
-    button_frm = tk.Frame(main_frm, padx=5, bg="white")
+    category_frm = tk.Frame(main_frm, bg=cream)
+    item_frm = tk.Frame(main_frm, bg=cream)
+    cart_frm = tk.Frame(main_frm, bg=cream)
+    listbox_frm = tk.Frame(cart_frm, bg=cream)
+    cart_button_frm = tk.Frame(cart_frm, bg=cream)
+    button_frm = tk.Frame(main_frm, padx=5, bg=cream)
 
     cart_frm.columnconfigure(0, weight=1)
     cart_frm.columnconfigure(1, weight=2)
@@ -253,7 +256,7 @@ def create_third_page():
         cart_frm,
         text="Order Details",
         font=("Arial", 14, "bold"),
-        bg="#fafafa"
+        bg=cream
     )
 
     cart_listbox = tk.Listbox(
@@ -272,14 +275,14 @@ def create_third_page():
         cart_frm,
         text="Total: PHP 0.00",
         font=("Arial", 12, "bold"),
-        bg="#fafafa"
+        bg=cream
     )
 
     remove_selected_btn = tk.Button(
         cart_button_frm,
         text="Remove Selected",
         bg="tomato",
-        fg="white",
+        fg=cream,
         command=control.delete_selected
     )
 
@@ -296,6 +299,7 @@ def create_third_page():
         font=("Arial", 12, "bold"),
         width=20,
         height=2,
+        bg="white",
         command=lambda: control.switch_to_page(1, callback=clear_listbox),
     )
 
@@ -347,15 +351,15 @@ def create_third_page():
 def create_fourth_page():
     prev_page = control.retrieve_data("current_page") - 1
     main_frm = control.retrieve_data("initial_frames")["main"]
-    heading_frm = tk.Frame(main_frm, bg="white")
-    order_details_frm = tk.Frame(main_frm, bg="white")
-    button_frm = tk.Frame(main_frm, bg="white")
+    heading_frm = tk.Frame(main_frm, bg=cream)
+    order_details_frm = tk.Frame(main_frm, bg=cream)
+    button_frm = tk.Frame(main_frm, bg=cream)
 
     heading_lbl = tk.Label(
         heading_frm,
         text="ORDER REVIEW",
         font=("Arial", 22, "bold"),
-        bg="white"
+        bg=cream
     )
 
     order_details_textbox = tk.Text(
@@ -369,7 +373,7 @@ def create_fourth_page():
         order_details_frm,
         text="Total: PHP 0.00",
         font=("Arial", 14, "bold"),
-        bg="white"
+        bg=cream
     )
 
     back_btn = tk.Button(
@@ -378,6 +382,7 @@ def create_fourth_page():
         font=("Arial", 12, "bold"),
         width=20,
         height=2,
+        bg="white",
         command=lambda: control.switch_to_page(prev_page, callback=clear_textbox),
     )
 
@@ -420,10 +425,10 @@ def create_fifth_page():
     next_page = control.retrieve_data("current_page") + 1
     thank_you_page = control.retrieve_data("current_page") + 2
     main_frm = control.retrieve_data("initial_frames")["main"]
-    heading_frm = tk.Frame(main_frm, bg="white")
-    button_frm = tk.Frame(main_frm, bg="white")
+    heading_frm = tk.Frame(main_frm, bg=cream)
+    button_frm = tk.Frame(main_frm, bg=cream)
     
-    heading_lbl = tk.Label(heading_frm, text="Mode of Payment", font=("Arial", 22), bg="white")
+    heading_lbl = tk.Label(heading_frm, text="Mode of Payment", font=("Arial", 22), bg=cream)
 
     cashless_payment_button = tk.Button(
         button_frm,
@@ -437,7 +442,7 @@ def create_fifth_page():
         command=lambda: control.switch_to_page(next_page)
     )
 
-    or_label = tk.Label(button_frm, text="or", font=("Arial", 18), bg="white")
+    or_label = tk.Label(button_frm, text="or", font=("Arial", 18), bg=cream)
 
     cash_payment_button = tk.Button(
         button_frm,
@@ -472,11 +477,11 @@ def create_sixth_page():
     next_page = control.retrieve_data("current_page") + 1
     prev_page = control.retrieve_data("current_page") - 1
     main_frm = control.retrieve_data("initial_frames")["main"]
-    scan_box_frm = tk.Frame(main_frm, bg="white", relief="solid", bd=2)
+    scan_box_frm = tk.Frame(main_frm, bg="lightgray", relief="solid", bd=2)
     scan_area_frm = tk.Frame(scan_box_frm, width=380, height=250, bd=2, relief="solid", bg="lightgray")
-    button_frm = tk.Frame(main_frm, bg="white")
+    button_frm = tk.Frame(main_frm, bg=cream)
 
-    scan_lbl = tk.Label(scan_box_frm, text="SCAN HERE", font=("Arial", 20, "bold"), bg="white")
+    scan_lbl = tk.Label(scan_box_frm, text="SCAN HERE", font=("Arial", 20, "bold"), bg="lightgray")
     scan_separator = ttk.Separator(scan_box_frm, orient="horizontal")
     scan_image_holder = tk.Label(
         scan_area_frm,
@@ -494,6 +499,7 @@ def create_sixth_page():
         bd=1,
         relief="solid",
         cursor="hand2",
+        bg="white",
         command=lambda: control.switch_to_page(prev_page)
     )
 
@@ -530,13 +536,13 @@ def create_sixth_page():
 
 def create_seventh_page():
     main_frm = control.retrieve_data("initial_frames")["main"]
-    heading_frm = tk.Frame(main_frm, bg="white")
+    heading_frm = tk.Frame(main_frm, bg=cream)
     order_box_frm = tk.Frame(main_frm, bg="white", bd=2, relief="solid")
-    button_frm = tk.Frame(main_frm, bg="white")
+    button_frm = tk.Frame(main_frm, bg=cream)
     order_number = control.retrieve_data("current_order_number")
 
-    heading_lbl = tk.Label(heading_frm, text="THANK YOU!", font=("Arial", 30, "bold"), fg="green", bg="white")
-    subheading_lbl = tk.Label(heading_frm, text="Here's your order no:", font=("Arial", 20), bg="white")
+    heading_lbl = tk.Label(heading_frm, text="THANK YOU!", font=("Arial", 30, "bold"), fg="green", bg=cream)
+    subheading_lbl = tk.Label(heading_frm, text="Here's your order no:", font=("Arial", 20), bg=cream)
     order_title_lbl = tk.Label(order_box_frm, text="ORDER NO.", font=("Arial", 20, "bold"), bg="white")
     box_separator = ttk.Separator(order_box_frm, orient="horizontal")
     order_number_lbl = tk.Label(order_box_frm, text=str(order_number), font=("Arial", 120, "bold"), fg="red", bg="white")
@@ -581,14 +587,14 @@ def create_seventh_page():
 
 def create_eighth_page():
     main_frm = control.retrieve_data("initial_frames")["main"]
-    heading_frm = tk.Frame(main_frm, bg="white")
-    in_progress_frm = tk.Frame(main_frm, bg="white")
-    done_frm = tk.Frame(main_frm, bg="white")
-    button_frm = tk.Frame(main_frm, bg="white")
+    heading_frm = tk.Frame(main_frm, bg=cream)
+    in_progress_frm = tk.Frame(main_frm, bg=cream)
+    done_frm = tk.Frame(main_frm, bg=cream)
+    button_frm = tk.Frame(main_frm, bg=cream)
 
-    heading_lbl = tk.Label(heading_frm, text="CURRENT ORDERS", font=("Arial", 22), bg="white")
-    in_progress_lbl = tk.Label(in_progress_frm, text="In-Progress", font=("Arial", 16), bg="white")
-    done_lbl = tk.Label(done_frm, text="Done", font=("Arial", 16), bg="white")
+    heading_lbl = tk.Label(heading_frm, text="CURRENT ORDERS", font=("Arial", 22), bg=cream)
+    in_progress_lbl = tk.Label(in_progress_frm, text="In-Progress", font=("Arial", 16), bg=cream)
+    done_lbl = tk.Label(done_frm, text="Done", font=("Arial", 16), bg=cream)
     go_back_btn = tk.Button(
         button_frm,
         text="GO BACK",
@@ -596,6 +602,7 @@ def create_eighth_page():
         cursor="hand2",
         width=20,
         height=2,
+        bg="white",
         command=lambda: control.switch_to_page(1)
     )
 
@@ -626,32 +633,32 @@ def create_eighth_page():
 def create_ninth_page():
     prev_page = control.retrieve_data("current_page") - 1
     main_frm = control.retrieve_data("initial_frames")["main"]
-    heading_frm = tk.Frame(main_frm, bg="white")
-    textbox_frm = tk.Frame(main_frm, bg="white")
+    heading_frm = tk.Frame(main_frm, bg=cream)
+    textbox_frm = tk.Frame(main_frm, bg=cream)
     scrollbar = tk.Scrollbar(textbox_frm, orient="vertical")
     table_textbox = tk.Text(textbox_frm)
-    status_frm = tk.Frame(main_frm, bg="white")
-    button_frm = tk.Frame(main_frm, bg="white")
+    status_frm = tk.Frame(main_frm, bg=cream)
+    button_frm = tk.Frame(main_frm, bg=cream)
 
     heading_lbl = tk.Label(
         heading_frm,
         text="Order No.",
         font=("Arial", 22),
-        bg="white"
+        bg=cream
     )
 
     status_lbl = tk.Label(
         status_frm,
         text="Status: ",
         font=("Arial", 13),
-        bg="white"
+        bg=cream
     )
 
     total_lbl = tk.Label(
         status_frm,
         text=f"Total: ₱",
         font=("Arial", 13),
-        bg="white"
+        bg=cream
     )
 
     finish_order_btn = tk.Button(
@@ -660,6 +667,7 @@ def create_ninth_page():
         font = ("Arial", 12, "bold"),
         width = 20,
         height = 2,
+        bg="white",
         command = lambda: control.switch_to_page(prev_page, update_status)
     )
 
@@ -669,6 +677,7 @@ def create_ninth_page():
         font=("Arial", 12, "bold"),
         width=20,
         height=2,
+        bg="white",
         command=lambda: control.switch_to_page(prev_page)
     )
 
@@ -810,7 +819,7 @@ def change_category(_category_name):
     update_page(3)
 
 def create_order_buttons(parent, order_list, status):
-    container = tk.Frame(parent, bg="white")
+    container = tk.Frame(parent, bg=cream)
     container.grid(row=1, column=0)
 
     row = 0
@@ -822,6 +831,7 @@ def create_order_buttons(parent, order_list, status):
             font=("Arial", 16, "bold"),
             width=6,
             height=2,
+            bg="white",
             command=lambda order_no=order_no: update_order_info(order_no)
         )
 
@@ -993,12 +1003,18 @@ def update_order_cards():
     in_progress_frm = control.retrieve_data("pages", "frames")["in-progress"]
     done_frm = control.retrieve_data("pages", "frames")["done"]
 
+    in_progress_buttons = control.retrieve_data("in_progress_buttons")
+
+    if in_progress_buttons:
+        for button in in_progress_buttons:
+            in_progress_buttons[button].destroy()
+
     create_order_buttons(in_progress_frm, in_progress_items, "in-progress")
     create_order_buttons(done_frm, done_items, "done")
 
 def picture_slot(parent, category, item_name):
     image_object = control.retrieve_data("images")[category][item_name]
-    slot = tk.Frame(parent, width=image_object.width(), height=image_object.height(), bg="white", bd=1, relief="solid")
+    slot = tk.Frame(parent, width=image_object.width(), height=image_object.height(), bg=cream, bd=1, relief="solid")
     tk.Label(slot, image=image_object, font=("Arial", 10)).pack(expand=True)
     return slot
 

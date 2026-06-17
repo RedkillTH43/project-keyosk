@@ -25,8 +25,7 @@ master_dict = {
     "cart_orders": {},
     "MAX_ROW": 8,
     "MAX_COLUMN": 4,
-    "dark_brown": "#8f664a",
-    "brown": "#c5a787",
+    "cream": "#f3e9dc",
     "category_names": [
         "Filipino Dishes",
         "Rice",

@@ -7,9 +7,6 @@ root = tk.Tk()
 root.title("Project Keyosk")
 root.geometry("1000x800")
 
-# ToDo: Fix order management module UI
-# ToDo: Add colors
-
 # Create images
 category_names = control.retrieve_data("category_names")
 item_names = control.retrieve_data("item_names")
