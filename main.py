@@ -51,7 +51,7 @@ control.pass_data(images_dict, "images")
 print("Loaded successfully!")
 
 control.load_screen(root)
-control.switch_to_page(1)
+control.switch_to_page(10)
 
 # Ensures program keeps running
 root.mainloop()

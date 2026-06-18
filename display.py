@@ -90,6 +90,8 @@ def set_up_page(page_number):
             create_eighth_page()
         case 9:
             create_ninth_page()
+        case 10:
+            create_tenth_page()
 
     # Make is_page_loaded of specified page to True
     control.pass_data(True, "pages", "is_page_loaded")
@@ -134,6 +136,18 @@ def home_page():
         bg=cream
     )
 
+    logout_btn = tk.Button(
+        button_frm,
+        text="LOG OUT",
+        font=("Arial", 12, "bold"),
+        width=8,
+        height=2,
+        cursor="hand2",
+        fg="white",
+        bg="red",
+        command=lambda: update_role("admin", logout=True)
+    )
+
     see_order_btn = tk.Button(
         button_frm,
         text="SEE ORDERS",
@@ -160,8 +174,9 @@ def home_page():
     heading.grid(row=0, column=0)
     image_object.grid(row=0, column=0)
     subtitle.grid(row=0, column=0)
-    see_order_btn.grid(row=0, column=0, padx=5)
-    start_btn.grid(row=0, column=1, padx=5)
+    logout_btn.grid(row=0, column=0, padx=5)
+    see_order_btn.grid(row=0, column=1, padx=5)
+    start_btn.grid(row=0, column=2, padx=5)
 
     frames_dict = {
         "heading": heading_frm,
@@ -730,6 +745,73 @@ def create_ninth_page():
     control.pass_data(page_dict, "pages")
     control.pass_data(widgets_dict, "management_widgets")
 
+def create_tenth_page():
+    main_frm = control.retrieve_data("initial_frames")["main"]
+    heading_frm = tk.Frame(main_frm, bg=cream)
+    button_frm = tk.Frame(main_frm, bg=cream)
+
+    button_frm.columnconfigure(0, weight=1)
+    button_frm.columnconfigure(1, weight=1)
+
+    heading = tk.Label(
+        heading_frm,
+        text="Select user type:",
+        font=("Arial", 24),
+        justify="center",
+        bg=cream
+    )
+
+    admin_btn = tk.Button(
+        button_frm,
+        text="ADMIN",
+        font=("Arial", 16, "bold"),
+        cursor="hand2",
+        command=lambda: update_role("admin")
+    )
+
+    customer_btn = tk.Button(
+        button_frm,
+        text="CUSTOMER",
+        font=("Arial", 16, "bold"),
+        cursor="hand2",
+        bg="white",
+        command=lambda: update_role("customer")
+    )
+
+    # Display all widgets
+    heading.grid(row=0, column=0)
+    admin_btn.grid(row=0, column=0, sticky="ew", padx=10)
+    customer_btn.grid(row=0, column=1, sticky="ew", padx=10)
+
+    frames_dict = {
+        "heading": heading_frm,
+        "button": button_frm
+    }
+
+    page_dict = {
+        control.retrieve_data("current_page"): { "frames": frames_dict, "is_page_loaded": False }
+    }
+
+    control.pass_data(page_dict, "pages")
+
+def update_role(role, logout=False):
+    control.switch_to_page(1)
+    see_order_btn = control.retrieve_data("home_widgets")["see_order_btn"]
+    start_order_btn = control.retrieve_data("home_widgets")["start_btn"]
+    control.pass_data(role, "current_role")
+
+    if role == "admin":
+        start_order_btn.grid_remove()
+        see_order_btn.grid()
+    elif role == "customer":
+        start_order_btn.grid()
+        see_order_btn.grid_remove()
+    else:
+        return
+
+    if logout:
+        control.switch_to_page(10)
+
 # Switch to specified page
 def switch_to(page_number, callback=None):
     control.clear_page()
@@ -1137,6 +1219,10 @@ def render_widgets(page_number):
             if textbox:
                 textbox.config(state="normal")
                 textbox.delete("end")
+        case 10:
+            # Display all frames
+            frames.get("heading").grid(row=1, column=0, columnspan=2, sticky="n", pady=50)
+            frames.get("button").grid(row=2, column=0, columnspan=2, padx=20, pady=5)
 
 def update_widgets(widgets, destroy=False, clear=False):
     if destroy:

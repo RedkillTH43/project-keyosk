@@ -9,6 +9,7 @@ master_dict = {
     "images": {},
     "current_order_number": 1,
     "selected_order_number": 1,
+    "current_role": "customer",
     "current_page": 0,
     "current_category": "Filipino Dishes",
     "order_details": {},
