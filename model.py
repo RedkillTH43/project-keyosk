@@ -98,9 +98,8 @@ def get_data(destination, deep_dest=None):
     return request
 
 # Update values in the cart
-def update_cart(item_name):
+def update_cart(item_name, current_category):
     cart_orders = master_dict.get("cart_orders")
-    current_category = master_dict.get("current_category")
 
     if item_name in cart_orders:
         quantity = cart_orders[item_name].get("quantity")

@@ -1,3 +1,4 @@
+import control
 import display as display_mod
 import model as model
 
@@ -46,8 +47,8 @@ def process_item_grid(item_row, item_column):
     return model.process_item_grid(item_row, item_column)
 
 # Save chosen item to cart
-def pass_to_cart(item_name):
-    model.update_cart(item_name)
+def pass_to_cart(item_name, category):
+    model.update_cart(item_name, category)
 
 # Process order details
 def process_order(switch=False):

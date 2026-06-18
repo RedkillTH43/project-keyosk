@@ -869,7 +869,7 @@ def make_item_cards(amount):
             height=200,
             borderwidth=2,
             relief="solid",
-            command=lambda item_name=item_name: add_to_cart(item_name),
+            command=lambda item_name=item_name, category=current_category: add_to_cart(item_name, category),
             bg="white"
         )
         # Stores created button to an array
@@ -898,8 +898,8 @@ def check_for_input():
     control.switch_to_page(4)
 
 # Store chosen item to cart
-def add_to_cart(item_name):
-    control.pass_to_cart(item_name)
+def add_to_cart(item_name, category):
+    control.pass_to_cart(item_name, category)
     update_page(3)
 
 # Change item display according to category
@@ -962,12 +962,13 @@ def clear_textbox():
     textbox.config(state="normal")
     control.clear_widgets(textbox)
 
-def clear_listbox():
+def clear_listbox(destroy=False):
     listbox = control.retrieve_data("cart_widgets")["listbox"]
     total_lbl = control.retrieve_data("cart_widgets")["total"]
     items = control.retrieve_data("items")
     category_names = control.retrieve_data("category_names")
-    control.destroy_widgets(items)
+    if destroy:
+        control.destroy_widgets(items)
 
     control.pass_data(category_names[0], "current_category")
     control.clear_widgets(listbox)
@@ -975,7 +976,7 @@ def clear_listbox():
     total_lbl.config(text="Total: PHP 0.00")
 
 def clear_order_details():
-    clear_listbox()
+    clear_listbox(destroy=True)
     clear_textbox()
     update_order_number()
     control.clear_orders("order_details")
@@ -1065,8 +1066,8 @@ def update_cart():
         return
 
     for item in list(orders.keys()):
-        quantity = orders[item]["quantity"]
-        cost = orders[item]["cost"]
+        quantity = orders[item].get("quantity")
+        cost = orders[item].get("cost")
         item_details.append(f"{item} x{quantity} = PHP {cost * quantity}")
 
     for item in list(orders.keys()):
